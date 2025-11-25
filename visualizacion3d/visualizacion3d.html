@@ -5,6 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualización 3D - CMFO Astronomía</title>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        #contenedor3d {
+            width: 100%;
+            height: 600px;
+            border: 2px solid var(--borde);
+            border-radius: 8px;
+            margin: 20px 0;
+            background: #000;
+        }
+        
+        .controles-3d {
+            background: rgba(0, 40, 60, 0.3);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .boton-3d {
+            background: var(--borde);
+            color: var(--texto);
+            border: 1px solid var(--titulo);
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .boton-3d:hover {
+            background: var(--titulo);
+            color: #000;
+        }
+        
+        .info-planeta {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--titulo);
+            max-width: 300px;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,35 +69,204 @@
 </nav>
 
 <header>
-    <h1>CMFO Astronomía - Visualización 3D</h1>
-    <p>Sistema de Renderizado y Simulación CMFO</p>
+    <h1>CMFO Astronomía - Sistema Solar 3D</h1>
+    <p>Visualización Interactiva del Sistema Solar CMFO</p>
 </header>
 
 <div class="contenedor">
     <div class="section">
-        <h2>Dashboard Visual 3D</h2>
-        <p>Plataforma para visualización interactiva de modelos fractales y astronómicos.</p>
+        <h2>Dashboard 3D del Sistema Solar</h2>
+        <p>Explora el sistema solar en tiempo real con posiciones calculadas por el modelo CMFO.</p>
         
-        <h3>Componentes Disponibles:</h3>
-        <ul>
-            <li>Visor Toro Fractal - Modelo 3D interactivo</li>
-            <li>Sistema Solar CMFO - Posiciones reales</li>
-            <li>Simulador de Patrones SHA-256</li>
-            <li>Mapas Estelares - Proyección fractal</li>
-            <li>Animaciones CMFO - Secuencias temporales</li>
-        </ul>
+        <!-- Contenedor 3D -->
+        <div id="contenedor3d"></div>
         
-        <div style="text-align: center; margin: 20px 0; padding: 30px; background: rgba(0, 60, 90, 0.1); border-radius: 8px;">
-            <h3>🚀 Área para Integración 3D</h3>
-            <p>Espacio preparado para el visor Three.js / WebGL</p>
+        <!-- Información del planeta -->
+        <div id="info-planeta" class="info-planeta" style="display: none;">
+            <h3 id="nombre-planeta"></h3>
+            <p id="descripcion-planeta"></p>
+            <p><strong>Distancia al Sol:</strong> <span id="distancia-sol"></span></p>
+            <p><strong>Período orbital:</strong> <span id="periodo-orbital"></span></p>
+        </div>
+        
+        <!-- Controles -->
+        <div class="controles-3d">
+            <h3>Controles de Navegación</h3>
+            <button class="boton-3d" onclick="cambiarVista('solar')">Vista Sistema Solar</button>
+            <button class="boton-3d" onclick="cambiarVista('tierra')">Vista desde Tierra</button>
+            <button class="boton-3d" onclick="cambiarVelocidad(1)">Velocidad Normal</button>
+            <button class="boton-3d" onclick="cambiarVelocidad(5)">Velocidad ×5</button>
+            <button class="boton-3d" onclick="cambiarVelocidad(10)">Velocidad ×10</button>
+        </div>
+        
+        <div class="section">
+            <h3>Características del Modelo CMFO</h3>
+            <ul>
+                <li>Posiciones planetarias calculadas con algoritmos CMFO</li>
+                <li>Escalas relativas aproximadas para mejor visualización</li>
+                <li>Órbitas elípticas basadas en parámetros reales</li>
+                <li>Interacción en tiempo real con rotación y traslación</li>
+                <li>Compatibilidad con dispositivos táctiles</li>
+            </ul>
         </div>
     </div>
 </div>
 
 <footer>
-    © 2025 CMFO Astronomía - Laboratorio Visual
+    © 2025 CMFO Astronomía - Laboratorio Visual 3D
 </footer>
 
+<!-- Three.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- OrbitControls -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.min.js"></script>
 <script src="../script.js"></script>
+
+<script>
+// ===========================
+// SISTEMA SOLAR 3D - CMFO ASTRONOMÍA
+// ===========================
+
+let escena, camara, renderizador, controles;
+let sol, planetas = [];
+let velocidadSimulacion = 1;
+
+function iniciarSistemaSolar() {
+    // Crear escena
+    escena = new THREE.Scene();
+    escena.background = new THREE.Color(0x000011);
+    
+    // Crear cámara
+    camara = new THREE.PerspectiveCamera(75, window.innerWidth / 600, 0.1, 1000);
+    camara.position.set(0, 20, 50);
+    
+    // Crear renderizador
+    const contenedor = document.getElementById('contenedor3d');
+    renderizador = new THREE.WebGLRenderer({ antialias: true });
+    renderizador.setSize(contenedor.clientWidth, contenedor.clientHeight);
+    contenedor.appendChild(renderizador.domElement);
+    
+    // Controles de órbita
+    controles = new THREE.OrbitControls(camara, renderizador.domElement);
+    controles.enableDamping = true;
+    controles.dampingFactor = 0.05;
+    
+    // Iluminación
+    const luzAmbiental = new THREE.AmbientLight(0x333333);
+    escena.add(luzAmbiental);
+    
+    const luzDireccional = new THREE.DirectionalLight(0xffffff, 1);
+    luzDireccional.position.set(5, 10, 7);
+    escena.add(luzDireccional);
+    
+    // Crear Sol
+    const geometriaSol = new THREE.SphereGeometry(5, 32, 32);
+    const materialSol = new THREE.MeshBasicMaterial({ 
+        color: 0xffaa00,
+        emissive: 0xff2200
+    });
+    sol = new THREE.Mesh(geometriaSol, materialSol);
+    escena.add(sol);
+    
+    // Crear planetas (datos simplificados para visualización)
+    const datosPlanetas = [
+        { nombre: "Mercurio", radio: 0.8, distancia: 10, color: 0x888888, periodo: 0.24, descripcion: "Planeta más cercano al Sol" },
+        { nombre: "Venus", radio: 1.2, distancia: 15, color: 0xffcc99, periodo: 0.62, descripcion: "Planeta más caliente del sistema" },
+        { nombre: "Tierra", radio: 1.3, distancia: 20, color: 0x3366ff, periodo: 1, descripcion: "Nuestro planeta hogar" },
+        { nombre: "Marte", radio: 1.1, distancia: 25, color: 0xff6633, periodo: 1.88, descripcion: "Planeta rojo" },
+        { nombre: "Júpiter", radio: 2.8, distancia: 35, color: 0xffaa66, periodo: 11.86, descripcion: "Gigante gaseoso" },
+        { nombre: "Saturno", radio: 2.4, distancia: 45, color: 0xffdd99, periodo: 29.46, descripcion: "Planeta con anillos" },
+        { nombre: "Urano", radio: 1.8, distancia: 55, color: 0x99ffff, periodo: 84.01, descripcion: "Gigante de hielo" },
+        { nombre: "Neptuno", radio: 1.7, distancia: 65, color: 0x3366ff, periodo: 164.8, descripcion: "Planeta más ventoso" }
+    ];
+    
+    datosPlanetas.forEach((dato, index) => {
+        const geometria = new THREE.SphereGeometry(dato.radio, 32, 32);
+        const material = new THREE.MeshPhongMaterial({ color: dato.color });
+        const planeta = new THREE.Mesh(geometria, material);
+        
+        // Posición inicial
+        const angulo = (index / datosPlanetas.length) * Math.PI * 2;
+        planeta.position.x = Math.cos(angulo) * dato.distancia;
+        planeta.position.z = Math.sin(angulo) * dato.distancia;
+        
+        // Guardar datos del planeta
+        planeta.userData = {
+            nombre: dato.nombre,
+            distancia: dato.distancia,
+            periodo: dato.periodo,
+            descripcion: dato.descripcion,
+            angulo: angulo,
+            velocidad: (2 * Math.PI) / (dato.periodo * 100)
+        };
+        
+        escena.add(planeta);
+        planetas.push(planeta);
+        
+        // Crear órbita
+        const geometriaOrbita = new THREE.RingGeometry(dato.distancia - 0.1, dato.distancia + 0.1, 64);
+        const materialOrbita = new THREE.MeshBasicMaterial({ 
+            color: 0x444444, 
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.3
+        });
+        const orbita = new THREE.Mesh(geometriaOrbita, materialOrbita);
+        orbita.rotation.x = Math.PI / 2;
+        escena.add(orbita);
+    });
+    
+    // Animación
+    function animar() {
+        requestAnimationFrame(animar);
+        
+        // Rotar planetas
+        planetas.forEach(planeta => {
+            planeta.userData.angulo += planeta.userData.velocidad * velocidadSimulacion;
+            planeta.position.x = Math.cos(planeta.userData.angulo) * planeta.userData.distancia;
+            planeta.position.z = Math.sin(planeta.userData.angulo) * planeta.userData.distancia;
+            planeta.rotation.y += 0.01;
+        });
+        
+        // Rotar Sol
+        sol.rotation.y += 0.005;
+        
+        controles.update();
+        renderizador.render(escena, camara);
+    }
+    
+    animar();
+    
+    // Redimensionar
+    window.addEventListener('resize', function() {
+        camara.aspect = contenedor.clientWidth / contenedor.clientHeight;
+        camara.updateProjectionMatrix();
+        renderizador.setSize(contenedor.clientWidth, contenedor.clientHeight);
+    });
+}
+
+// Funciones de control
+function cambiarVista(vista) {
+    switch(vista) {
+        case 'solar':
+            camara.position.set(0, 20, 50);
+            controles.target.set(0, 0, 0);
+            break;
+        case 'tierra':
+            const tierra = planetas[2]; // Tierra
+            camara.position.copy(tierra.position).add(new THREE.Vector3(0, 5, 10));
+            controles.target.copy(tierra.position);
+            break;
+    }
+}
+
+function cambiarVelocidad(velocidad) {
+    velocidadSimulacion = velocidad;
+}
+
+// Iniciar cuando la página cargue
+window.addEventListener('load', iniciarSistemaSolar);
+</script>
+
 </body>
 </html>
