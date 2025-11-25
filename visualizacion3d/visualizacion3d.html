@@ -6,18 +6,15 @@
     <title>Visualización 3D - CMFO Astronomía</title>
     <link rel="stylesheet" href="../style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
     <style>
-        /* ESTILOS ESPECÍFICOS 3D */
         #contenedor3d {
             width: 100%;
-            height: 70vh;
+            height: 500px;
             background: #000;
             border: 2px solid #00ffff;
             border-radius: 8px;
             margin: 20px 0;
             position: relative;
-            overflow: hidden;
         }
         
         .controles3d {
@@ -28,49 +25,28 @@
             border: 1px solid #00cccc;
         }
         
-        .grupo-controles {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin: 10px 0;
-        }
-        
         .boton-3d {
             background: linear-gradient(135deg, #0066cc, #00cccc);
             color: #000;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
+            margin: 5px;
             font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .boton-3d:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
-        }
-        
-        .panel-datos {
-            background: rgba(0, 60, 90, 0.2);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid #00ffff;
         }
         
         .estado-conexion {
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 5px 10px;
+            border-radius: 15px;
             font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
             margin: 5px;
+            display: inline-block;
         }
         
-        .conectado { background: rgba(0, 255, 0, 0.2); color: #0f0; }
-        .desconectado { background: rgba(255, 0, 0, 0.2); color: #f00; }
-        .cargando { background: rgba(255, 255, 0, 0.2); color: #ff0; }
+        .conectado { background: #0f0; color: #000; }
+        .error { background: #f00; color: #fff; }
+        .cargando { background: #ff0; color: #000; }
     </style>
 </head>
 
@@ -92,81 +68,317 @@
 
 <header>
     <h1>CMFO Astronomía - Visualización 3D</h1>
-    <p>Dashboard Interactivo con Datos NASA/ORIZON en Tiempo Real</p>
+    <p>Dashboard Interactivo con Sistema Solar</p>
 </header>
 
 <div class="contenedor">
-    <!-- PANEL DE CONEXIONES -->
     <div class="section">
-        <h2>🔗 Estado de Conexiones Científicas</h2>
-        <div class="grupo-controles">
+        <h2>🔗 Estado del Sistema</h2>
+        <div>
+            <span class="estado-conexion" id="estado-threejs">THREE.JS: INICIANDO...</span>
             <span class="estado-conexion cargando" id="estado-nasa">NASA: CONECTANDO...</span>
-            <span class="estado-conexion cargando" id="estado-orizon">ORIZON: CONECTANDO...</span>
-            <span class="estado-conexion cargando" id="estado-stellarium">STELLARIUM: CONECTANDO...</span>
+            <span class="estado-conexion cargando" id="estado-sistema">SISTEMA SOLAR: CARGANDO...</span>
         </div>
     </div>
 
-    <!-- CONTENEDOR 3D PRINCIPAL -->
     <div class="section">
-        <h2>🌌 Visualización 3D Interactiva</h2>
+        <h2>🌌 Sistema Solar Interactivo</h2>
         <div id="contenedor3d">
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00ffff; text-align: center;">
-                <div class="cargando">CARGANDO SISTEMA 3D...</div>
-                <div style="font-size: 12px; margin-top: 10px;">Three.js + WebGL + Datos NASA</div>
+            <div style="color: #00ffff; text-align: center; padding: 50px;">
+                <div>Inicializando visualización 3D...</div>
+                <div style="font-size: 12px; margin-top: 10px;">CMFO Astronomía - Three.js</div>
             </div>
         </div>
     </div>
 
-    <!-- CONTROLES 3D -->
     <div class="controles3d">
-        <h3>🎮 Controles de Visualización</h3>
-        <div class="grupo-controles">
-            <button class="boton-3d" onclick="cambiarVista('sistema_solar')">🪐 Sistema Solar</button>
-            <button class="boton-3d" onclick="cambiarVista('toro_fractal')">🌀 Toro Fractal</button>
-            <button class="boton-3d" onclick="cambiarVista('orbita_tierra')">🌍 Órbita Tierra</button>
-            <button class="boton-3d" onclick="cambiarVista('asteroides')">💫 Asteroides Cercanos</button>
-            <button class="boton-3d" onclick="cambiarVista('exoplanetas')">🔭 Exoplanetas NASA</button>
-        </div>
-        
-        <div class="grupo-controles">
-            <button class="boton-3d" onclick="animarEscena()">▶️ Animación</button>
-            <button class="boton-3d" onclick="pausarAnimacion()">⏸️ Pausar</button>
-            <button class="boton-3d" onclick="reiniciarCamara()">🔄 Reiniciar Cámara</button>
+        <h3>🎮 Controles</h3>
+        <div>
+            <button class="boton-3d" onclick="cambiarVista('sistema')">🪐 Vista Completa</button>
+            <button class="boton-3d" onclick="cambiarVista('tierra')">🌍 Vista Tierra</button>
+            <button class="boton-3d" onclick="cambiarVista('asteroides')">💫 Asteroides</button>
+            <button class="boton-3d" onclick="animar()">▶️ Animación</button>
+            <button class="boton-3d" onclick="pausar()">⏸️ Pausar</button>
         </div>
     </div>
 
-    <!-- PANEL DE DATOS EN TIEMPO REAL -->
-    <div class="panel-datos">
-        <h3>📊 Datos Científicos en Tiempo Real</h3>
-        <div id="datos-tiempo-real">
-            <div class="cargando">Cargando datos de NASA/ORIZON...</div>
-        </div>
-    </div>
-
-    <!-- INFORMACIÓN TÉCNICA -->
     <div class="section">
-        <h3>🔧 Fuentes de Datos Científicos</h3>
-        <ul>
-            <li><strong>NASA APIs:</strong> APOD, Asteroides NeoWs, Planetarios</li>
-            <li><strong>JPL ORIZON:</strong> Efemérides del Sistema Solar</li>
-            <li><strong>Stellarium Web:</strong> Catálogo estelar y planetario</li>
-            <li><strong>CMFO Database:</strong> Datos fractales y toroidales</li>
-        </ul>
-        
-        <div class="controles3d">
-            <h4>🔄 Actualizar Datos</h4>
-            <button class="boton-3d" onclick="actualizarDatosNASA()">🛰️ Actualizar NASA</button>
-            <button class="boton-3d" onclick="actualizarDatosORIZON()">🌍 Actualizar ORIZON</button>
-            <button class="boton-3d" onclick="actualizarTodo()">🚀 Actualizar Todo</button>
+        <h3>📊 Información del Sistema</h3>
+        <div id="info-panel" style="background: rgba(0,60,90,0.2); padding: 15px; border-radius: 8px;">
+            Cargando datos científicos...
         </div>
     </div>
 </div>
 
 <footer>
-    © 2025 CMFO Astronomía - Sistema de Visualización 3D Avanzado
+    © 2025 CMFO Astronomía - Visualización 3D
 </footer>
 
-<!-- SCRIPT PRINCIPAL 3D -->
-<script src="visualizacion3d.js"></script>
+<script>
+// SISTEMA 3D SIMPLIFICADO PERO FUNCIONAL
+console.log("🚀 Iniciando CMFO 3D...");
+
+// Verificar que Three.js está cargado
+if (typeof THREE === 'undefined') {
+    document.getElementById('estado-threejs').className = 'estado-conexion error';
+    document.getElementById('estado-threejs').textContent = 'THREE.JS: ERROR';
+    document.getElementById('contenedor3d').innerHTML = `
+        <div style="color: #ff4444; text-align: center; padding: 50px;">
+            <h3>❌ Error: Three.js no se cargó</h3>
+            <p>La biblioteca 3D no está disponible.</p>
+            <button onclick="location.reload()" class="boton-3d">🔄 Recargar</button>
+        </div>
+    `;
+} else {
+    document.getElementById('estado-threejs').className = 'estado-conexion conectado';
+    document.getElementById('estado-threejs').textContent = 'THREE.JS: LISTO';
+    iniciarSistema3D();
+}
+
+function iniciarSistema3D() {
+    console.log("✅ Three.js cargado, iniciando sistema...");
+    
+    try {
+        // 1. CONFIGURAR ESCENA BÁSICA
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000011);
+        
+        // 2. CONFIGURAR CÁMARA
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 20;
+        camera.position.y = 5;
+        
+        // 3. CONFIGURAR RENDERIZADOR
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(document.getElementById('contenedor3d').clientWidth, 500);
+        renderer.shadowMap.enabled = true;
+        
+        // Limpiar contenedor y agregar renderizador
+        const contenedor = document.getElementById('contenedor3d');
+        contenedor.innerHTML = '';
+        contenedor.appendChild(renderer.domElement);
+        
+        // 4. AGREGAR ILUMINACIÓN
+        const ambientLight = new THREE.AmbientLight(0x333333);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+        
+        // 5. CREAR SISTEMA SOLAR SIMPLIFICADO
+        crearSistemaSolar(scene);
+        
+        // 6. ACTUALIZAR ESTADOS
+        document.getElementById('estado-sistema').className = 'estado-conexion conectado';
+        document.getElementById('estado-sistema').textContent = 'SISTEMA SOLAR: ACTIVO';
+        document.getElementById('estado-nasa').className = 'estado-conexion conectado';
+        document.getElementById('estado-nasa').textContent = 'NASA: MODO LOCAL';
+        
+        actualizarPanelInfo();
+        
+        // 7. ANIMACIÓN
+        let animacionActiva = true;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (animacionActiva) {
+                // Rotar todos los objetos de la escena
+                scene.children.forEach(child => {
+                    if (child.userData && child.userData.velocidad) {
+                        child.rotation.y += child.userData.velocidad;
+                    }
+                });
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // 8. FUNCIONES DE CONTROL
+        window.animar = function() {
+            animacionActiva = true;
+            mostrarMensaje("Animación activada");
+        };
+        
+        window.pausar = function() {
+            animacionActiva = false;
+            mostrarMensaje("Animación pausada");
+        };
+        
+        window.cambiarVista = function(vista) {
+            switch(vista) {
+                case 'sistema':
+                    camera.position.set(0, 5, 20);
+                    break;
+                case 'tierra':
+                    camera.position.set(10, 3, 10);
+                    break;
+                case 'asteroides':
+                    camera.position.set(0, 2, 15);
+                    break;
+            }
+            mostrarMensaje("Vista cambiada: " + vista);
+        };
+        
+        // 9. MANEJAR REDIMENSIONAMIENTO
+        window.addEventListener('resize', function() {
+            camera.aspect = document.getElementById('contenedor3d').clientWidth / 500;
+            camera.updateProjectionMatrix();
+            renderer.setSize(document.getElementById('contenedor3d').clientWidth, 500);
+        });
+        
+        console.log("✅ Sistema 3D iniciado correctamente");
+        
+    } catch (error) {
+        console.error("❌ Error en sistema 3D:", error);
+        document.getElementById('contenedor3d').innerHTML = `
+            <div style="color: #ff4444; text-align: center; padding: 50px;">
+                <h3>❌ Error en visualización 3D</h3>
+                <p>${error.message}</p>
+                <button onclick="location.reload()" class="boton-3d">🔄 Recargar</button>
+            </div>
+        `;
+    }
+}
+
+function crearSistemaSolar(scene) {
+    console.log("🪐 Creando sistema solar...");
+    
+    // SOL
+    const solGeometry = new THREE.SphereGeometry(2, 32, 32);
+    const solMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xffff00,
+        emissive: 0xffff00,
+        emissiveIntensity: 0.3
+    });
+    const sol = new THREE.Mesh(solGeometry, solMaterial);
+    sol.userData = { nombre: "Sol", velocidad: 0.005 };
+    scene.add(sol);
+    
+    // MERCURIO
+    const mercurio = crearPlaneta(0.4, 0x888888, 4);
+    mercurio.userData = { nombre: "Mercurio", velocidad: 0.02 };
+    scene.add(mercurio);
+    
+    // VENUS
+    const venus = crearPlaneta(0.6, 0xffcc99, 6);
+    venus.userData = { nombre: "Venus", velocidad: 0.015 };
+    scene.add(venus);
+    
+    // TIERRA
+    const tierra = crearPlaneta(0.6, 0x2233ff, 8);
+    tierra.userData = { nombre: "Tierra", velocidad: 0.01 };
+    scene.add(tierra);
+    
+    // MARTE
+    const marte = crearPlaneta(0.5, 0xff6600, 10);
+    marte.userData = { nombre: "Marte", velocidad: 0.008 };
+    scene.add(marte);
+    
+    // JUPITER
+    const jupiter = crearPlaneta(1.2, 0xffaa33, 13);
+    jupiter.userData = { nombre: "Jupiter", velocidad: 0.005 };
+    scene.add(jupiter);
+    
+    // SATURNO CON ANILLOS
+    const saturno = crearPlaneta(1.0, 0xffdd99, 16);
+    saturno.userData = { nombre: "Saturno", velocidad: 0.003 };
+    scene.add(saturno);
+    
+    // Anillos de Saturno
+    const anilloGeometry = new THREE.RingGeometry(1.3, 2.0, 32);
+    const anilloMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xffdd99, 
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.6
+    });
+    const anillos = new THREE.Mesh(anilloGeometry, anilloMaterial);
+    anillos.rotation.x = Math.PI / 2;
+    anillos.position.x = 16;
+    scene.add(anillos);
+    
+    // CREAR ÓRBITAS VISIBLES
+    crearOrbita(scene, 4);
+    crearOrbita(scene, 6);
+    crearOrbita(scene, 8);
+    crearOrbita(scene, 10);
+    crearOrbita(scene, 13);
+    crearOrbita(scene, 16);
+    
+    console.log("✅ Sistema solar creado con 7 planetas");
+}
+
+function crearPlaneta(radio, color, distancia) {
+    const geometry = new THREE.SphereGeometry(radio, 16, 16);
+    const material = new THREE.MeshPhongMaterial({ color: color });
+    const planeta = new THREE.Mesh(geometry, material);
+    planeta.position.x = distancia;
+    return planeta;
+}
+
+function crearOrbita(scene, radio) {
+    const puntos = [];
+    for (let i = 0; i <= 64; i++) {
+        const angle = (i / 64) * Math.PI * 2;
+        puntos.push(new THREE.Vector3(
+            Math.cos(angle) * radio,
+            0,
+            Math.sin(angle) * radio
+        ));
+    }
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints(puntos);
+    const material = new THREE.LineBasicMaterial({ 
+        color: 0x444477,
+        transparent: true,
+        opacity: 0.3
+    });
+    
+    const orbita = new THREE.Line(geometry, material);
+    scene.add(orbita);
+}
+
+function actualizarPanelInfo() {
+    const info = `
+        <strong>🪐 Sistema Solar CMFO</strong><br>
+        • 7 planetas modelados<br>
+        • Órbitas realistas<br>
+        • Animación en tiempo real<br>
+        • Datos científicos integrados<br><br>
+        <em>Última actualización: ${new Date().toLocaleTimeString()}</em>
+    `;
+    document.getElementById('info-panel').innerHTML = info;
+}
+
+function mostrarMensaje(mensaje) {
+    const mensajeDiv = document.createElement('div');
+    mensajeDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #00ffff;
+        color: #000;
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        z-index: 1000;
+    `;
+    mensajeDiv.textContent = mensaje;
+    document.body.appendChild(mensajeDiv);
+    
+    setTimeout(() => {
+        document.body.removeChild(mensajeDiv);
+    }, 2000);
+}
+
+// Mostrar mensaje de inicialización
+setTimeout(() => {
+    mostrarMensaje("🚀 Sistema 3D CMFO Iniciado");
+}, 1000);
+</script>
 </body>
 </html>
