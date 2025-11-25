@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -46,8 +45,56 @@
         </ul>
         
         <div class="section" style="background: rgba(0, 90, 60, 0.1);">
-            <h3>📤 Próximamente: Formulario de Aportes</h3>
-            <p>Sistema integrado para enviar contribuciones directamente al equipo CMFO.</p>
+            <h3>📤 Formulario de Aportes</h3>
+            <p>Envía tus contribuciones directamente al equipo CMFO.</p>
+            
+            <form id="formulario-aportes" class="formulario-cmfo" action="https://formspree.io/f/mzzqadzl" method="POST">
+                <input type="hidden" name="_subject" value="Nuevo Aporte CMFO">
+                
+                <div class="campo-formulario">
+                    <label for="nombre-aporte">Nombre completo:</label>
+                    <input type="text" id="nombre-aporte" name="nombre" required>
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="email-aporte">Email:</label>
+                    <input type="email" id="email-aporte" name="email" required>
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="tipo-aporte">Tipo de Aporte:</label>
+                    <select id="tipo-aporte" name="tipo_aporte" required>
+                        <option value="">Selecciona el tipo</option>
+                        <option value="investigacion">Investigación Original</option>
+                        <option value="analisis">Análisis de Datos</option>
+                        <option value="software">Desarrollo de Software</option>
+                        <option value="modelo3d">Modelo 3D</option>
+                        <option value="documentacion">Documentación</option>
+                        <option value="otro">Otro Tipo</option>
+                    </select>
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="titulo-aporte">Título del Aporte:</label>
+                    <input type="text" id="titulo-aporte" name="titulo" required placeholder="Ej: Análisis fractal del sistema solar">
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="descripcion-aporte">Descripción detallada:</label>
+                    <textarea id="descripcion-aporte" name="descripcion" rows="6" required placeholder="Describe tu aporte, metodología, resultados..."></textarea>
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="archivos">Información de archivos (opcional):</label>
+                    <textarea id="archivos" name="archivos" rows="3" placeholder="Si tienes archivos, describe formatos y cómo enviarlos..."></textarea>
+                </div>
+                
+                <button type="submit" class="boton-enviar">Enviar Aporte</button>
+            </form>
+            
+            <div style="padding: 15px; background: rgba(0, 90, 60, 0.2); border-radius: 5px; margin-top: 15px;">
+                ✅ Los aportes llegarán directamente a: cmfoastronomiasuiteplataform@gmail.com
+            </div>
         </div>
     </div>
 </div>
