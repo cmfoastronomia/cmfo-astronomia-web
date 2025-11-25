@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -38,19 +37,48 @@
         
         <h3>Vías de Contacto:</h3>
         <ul>
-            <li>📧 Email: equipo@cmfoastronomia.org</li>
-            <li>🔗 GitHub: github.com/cmfo-astronomia</li>
-            <li>📚 Foros: comunidad.cmfoastronomia.org</li>
-            <li>📊 Reportes: sistema.cmfoastronomia.org</li>
-            <li>👥 Colaboraciones: investigacion@cmfoastronomia.org</li>
+            <li>📧 Email: cmfoastronomiasuiteplataform@gmail.com</li>
+            <li>🔗 GitHub: github.com/cmfoastronomia</li>
+            <li>🌐 Sitio Web: cmfoastronomia.github.io/cmfo-astronomia-web/</li>
         </ul>
         
-        <!-- ⬇️⬇️⬇️ AQUÍ ESTÁ LA SECCIÓN A REEMPLAZAR ⬇️⬇️⬇️ -->
         <div class="section" style="background: rgba(0, 60, 90, 0.1);">
-            <h3>📨 Formulario de Contacto (Próximamente)</h3>
-            <p>Sistema integrado para envío directo de mensajes al equipo CMFO.</p>
-            <div style="padding: 15px; margin: 10px 0; background: rgba(0, 80, 120, 0.2); border-radius: 5px;">
-                <strong>Área preparada para:</strong> Campos de nombre, email, asunto y mensaje.
+            <h3>📨 Formulario de Contacto Oficial</h3>
+            <p>Envía tu mensaje directamente al equipo CMFO Astronomía.</p>
+            
+            <form id="formulario-contacto" class="formulario-cmfo">
+                <div class="campo-formulario">
+                    <label for="nombre">Nombre completo:</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="asunto">Asunto:</label>
+                    <select id="asunto" name="asunto" required>
+                        <option value="">Selecciona un asunto</option>
+                        <option value="colaboracion">Propuesta de Colaboración</option>
+                        <option value="investigacion">Consulta de Investigación</option>
+                        <option value="tecnica">Soporte Técnico</option>
+                        <option value="general">Información General</option>
+                        <option value="otros">Otros</option>
+                    </select>
+                </div>
+                
+                <div class="campo-formulario">
+                    <label for="mensaje">Mensaje:</label>
+                    <textarea id="mensaje" name="mensaje" rows="5" required placeholder="Describe tu consulta o propuesta..."></textarea>
+                </div>
+                
+                <button type="submit" class="boton-enviar">Enviar Mensaje</button>
+            </form>
+            
+            <div id="mensaje-exito" style="display: none; padding: 15px; background: rgba(0, 90, 60, 0.2); border-radius: 5px; margin-top: 15px;">
+                ✅ Mensaje enviado correctamente. Te contactaremos pronto.
             </div>
         </div>
     </div>
