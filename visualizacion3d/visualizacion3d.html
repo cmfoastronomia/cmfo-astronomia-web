@@ -9,13 +9,12 @@
     <style>
         #contenedor3d {
             width: 100%;
-            height: 600px;
+            height: 500px;
             background: #000;
             border: 2px solid #00ffff;
             border-radius: 8px;
             margin: 20px 0;
             position: relative;
-            overflow: hidden;
         }
         
         .controles3d {
@@ -35,12 +34,6 @@
             cursor: pointer;
             margin: 5px;
             font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .boton-3d:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
         }
         
         .panel-info {
@@ -51,16 +44,13 @@
             border-left: 4px solid #00ffff;
         }
         
-        .estado-sistema {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            color: #00ffff;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 100;
+        .alternativa-stellarium {
+            background: rgba(0, 80, 120, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid #00ffff;
         }
     </style>
 </head>
@@ -83,14 +73,18 @@
 
 <header>
     <h1>CMFO Astronomía - Sistema Solar 3D</h1>
-    <p>Simulación científica con órbitas reales y representación precisa</p>
+    <p>Simulación científica con representación precisa del sistema solar</p>
 </header>
 
 <div class="contenedor">
+    <!-- SISTEMA 3D SIMPLIFICADO PERO FUNCIONAL -->
     <div class="section">
-        <h2>🌌 Simulación del Sistema Solar</h2>
+        <h2>🌌 Visualización del Sistema Solar</h2>
         <div id="contenedor3d">
-            <div class="estado-sistema" id="estado">Inicializando sistema 3D...</div>
+            <div style="color: #00ffff; text-align: center; padding: 50px;">
+                <div id="mensaje-carga">Inicializando visualización 3D...</div>
+                <div style="font-size: 12px; margin-top: 10px;">CMFO Astronomía - Three.js</div>
+            </div>
         </div>
     </div>
 
@@ -99,212 +93,161 @@
         <div>
             <button class="boton-3d" onclick="cambiarVista('completa')">🪐 Vista Completa</button>
             <button class="boton-3d" onclick="cambiarVista('interior')">🌍 Sistema Interior</button>
-            <button class="boton-3d" onclick="cambiarVista('exterior')">🪐 Sistema Exterior</button>
             <button class="boton-3d" onclick="cambiarVista('tierra')">🌎 Tierra y Luna</button>
             <button class="boton-3d" onclick="toggleAnimacion()" id="btn-animacion">▶️ Iniciar Animación</button>
-            <button class="boton-3d" onclick="reiniciarVista()">🔄 Reiniciar Vista</button>
         </div>
+    </div>
+
+    <!-- ALTERNATIVA STELLARIUM -->
+    <div class="alternativa-stellarium">
+        <h3>🔭 ¿Prefieres máxima precisión científica?</h3>
+        <p>Accede a Stellarium Web - Planetario en tiempo real con catálogo completo</p>
+        <a href="https://stellarium-web.org/" target="_blank" class="boton-3d" style="display: inline-block; text-decoration: none;">
+            🚀 Abrir Stellarium Web
+        </a>
     </div>
 
     <div class="panel-info">
-        <h3>🔬 Datos Científicos</h3>
+        <h3>🔬 Datos Científicos del Sistema Solar</h3>
         <div id="info-panel">
-            <div>• <strong>Sol:</strong> Radio: 696,340 km | Tipo: G2V</div>
-            <div>• <strong>Mercurio:</strong> Distancia: 0.39 AU | Período: 88 días</div>
-            <div>• <strong>Venus:</strong> Distancia: 0.72 AU | Período: 225 días</div>
-            <div>• <strong>Tierra:</strong> Distancia: 1.00 AU | Período: 365 días</div>
-            <div>• <strong>Marte:</strong> Distancia: 1.52 AU | Período: 687 días</div>
-            <div>• <strong>Júpiter:</strong> Distancia: 5.20 AU | Período: 12 años</div>
-            <div>• <strong>Saturno:</strong> Distancia: 9.58 AU | Período: 29 años</div>
-            <div>• <strong>Urano:</strong> Distancia: 19.22 AU | Período: 84 años</div>
-            <div>• <strong>Neptuno:</strong> Distancia: 30.05 AU | Período: 165 años</div>
+            <div><strong>Sol:</strong> Radio: 696,340 km | Tipo: G2V</div>
+            <div><strong>Mercurio:</strong> Distancia: 0.39 AU | Período: 88 días</div>
+            <div><strong>Venus:</strong> Distancia: 0.72 AU | Período: 225 días</div>
+            <div><strong>Tierra:</strong> Distancia: 1.00 AU | Período: 365 días | Luna: 1</div>
+            <div><strong>Marte:</strong> Distancia: 1.52 AU | Período: 687 días</div>
+            <div><strong>Júpiter:</strong> Distancia: 5.20 AU | Período: 12 años</div>
+            <div><strong>Saturno:</strong> Distancia: 9.58 AU | Período: 29 años</div>
         </div>
-    </div>
-
-    <div class="section">
-        <h3>🛸 Características de la Simulación</h3>
-        <ul>
-            <li><strong>Escalas realistas:</strong> Distancias y tamaños proporcionales</li>
-            <li><strong>Órbitas precisas:</strong> Basadas en datos astronómicos reales</li>
-            <li><strong>Movimiento orbital:</strong> Velocidades orbitales científicas</li>
-            <li><strong>Renderizado 3D:</strong> Gráficos en tiempo real con WebGL</li>
-            <li><strong>Navegación libre:</strong> Control completo de cámara 3D</li>
-        </ul>
     </div>
 </div>
 
 <footer>
-    © 2025 CMFO Astronomía - Simulación Científica Avanzada
+    © 2025 CMFO Astronomía - Visualización Científica
 </footer>
 
 <script>
-// SISTEMA SOLAR 3D - VERSIÓN FUNCIONAL INMEDIATA
-console.log("🚀 Iniciando CMFO Sistema Solar 3D...");
+// SISTEMA 3D SIMPLIFICADO Y GARANTIZADO
+console.log("🚀 Iniciando sistema 3D CMFO...");
 
-// CONFIGURACIÓN DEL SISTEMA SOLAR (DATOS REALES)
-const sistemaSolar = {
-    sol: { radio: 2.0, distancia: 0, periodo: 0, color: 0xFFD700, velocidad: 0.002 },
-    mercurio: { radio: 0.4, distancia: 4, periodo: 88, color: 0x8C7853, velocidad: 0.04 },
-    venus: { radio: 0.6, distancia: 7, periodo: 225, color: 0xE6CD8C, velocidad: 0.015 },
-    tierra: { radio: 0.6, distancia: 10, periodo: 365, color: 0x6B93D6, velocidad: 0.01 },
-    marte: { radio: 0.5, distancia: 15, periodo: 687, color: 0xCD5C5C, velocidad: 0.008 },
-    jupiter: { radio: 1.4, distancia: 22, periodo: 4333, color: 0xD8CA9D, velocidad: 0.004 },
-    saturno: { radio: 1.2, distancia: 28, periodo: 10759, color: 0xF0E68C, velocidad: 0.002 },
-    urano: { radio: 0.8, distancia: 36, periodo: 30687, color: 0x87CEEB, velocidad: 0.001 },
-    neptuno: { radio: 0.8, distancia: 45, periodo: 60190, color: 0x4169E1, velocidad: 0.0005 },
-    luna: { radio: 0.2, distancia: 1.2, periodo: 27, color: 0xC0C0C0, velocidad: 0.02 }
-};
-
-// VARIABLES GLOBALES
 let escena, camara, renderizador;
-let objetos = {};
 let animacionActiva = false;
-let orbitControls;
 
-function iniciarSistema3D() {
-    console.log("🌌 Configurando entorno 3D...");
+function iniciarThreeJS() {
+    console.log("🔧 Verificando compatibilidad Three.js...");
+    
+    // VERIFICAR QUE THREE.JS ESTÉ CARGADO
+    if (typeof THREE === 'undefined') {
+        document.getElementById('mensaje-carga').innerHTML = '❌ Three.js no disponible<br><small>Usando visualización alternativa</small>';
+        mostrarVisualizacionAlternativa();
+        return;
+    }
     
     try {
-        // 1. CONFIGURAR ESCENA
+        // CONFIGURACIÓN MÍNIMA PERO FUNCIONAL
+        const contenedor = document.getElementById('contenedor3d');
+        const ancho = contenedor.clientWidth;
+        const alto = 500;
+        
+        // 1. ESCENA
         escena = new THREE.Scene();
         escena.background = new THREE.Color(0x000011);
-        escena.fog = new THREE.Fog(0x000022, 50, 200);
         
-        // 2. CONFIGURAR CÁMARA
-        const ancho = document.getElementById('contenedor3d').clientWidth;
-        const alto = 600;
+        // 2. CÁMARA
         camara = new THREE.PerspectiveCamera(75, ancho / alto, 0.1, 1000);
-        camara.position.set(0, 15, 50);
+        camara.position.z = 30;
+        camara.position.y = 10;
         
-        // 3. CONFIGURAR RENDERIZADOR
-        renderizador = new THREE.WebGLRenderer({ 
-            antialias: true,
-            powerPreference: "high-performance"
-        });
+        // 3. RENDERIZADOR
+        renderizador = new THREE.WebGLRenderer({ antialias: true });
         renderizador.setSize(ancho, alto);
-        renderizador.shadowMap.enabled = true;
-        renderizador.shadowMap.type = THREE.PCFSoftShadowMap;
         
-        // LIMPIAR CONTENEDOR Y AGREGAR RENDERIZADOR
-        const contenedor = document.getElementById('contenedor3d');
+        // LIMPIAR Y AGREGAR AL DOM
         contenedor.innerHTML = '';
         contenedor.appendChild(renderizador.domElement);
         
-        // 4. CONFIGURAR ILUMINACIÓN
-        configurarIluminacion();
+        // 4. ILUMINACIÓN BÁSICA
+        const luzAmbiental = new THREE.AmbientLight(0x333333);
+        escena.add(luzAmbiental);
         
-        // 5. CREAR SISTEMA SOLAR
-        crearSistemaSolar();
+        const luzDireccional = new THREE.DirectionalLight(0xffffff, 1);
+        luzDireccional.position.set(5, 5, 5);
+        escena.add(luzDireccional);
         
-        // 6. CREAR ESTRELLAS DE FONDO
-        crearEstrellasFondo();
+        // 5. CREAR SISTEMA SOLAR BÁSICO
+        crearSistemaSolarBasico();
         
-        // 7. CONFIGURAR CONTROLES BÁSICOS
-        configurarControles();
-        
-        // 8. INICIAR ANIMACIÓN
+        // 6. INICIAR ANIMACIÓN
         animar();
         
-        // 9. CONFIGURAR REDIMENSIONAMIENTO
-        window.addEventListener('resize', redimensionar);
+        // 7. CONFIGURAR REDIMENSIONAMIENTO
+        window.addEventListener('resize', function() {
+            const nuevoAncho = contenedor.clientWidth;
+            const nuevoAlto = 500;
+            camara.aspect = nuevoAncho / nuevoAlto;
+            camara.updateProjectionMatrix();
+            renderizador.setSize(nuevoAncho, nuevoAlto);
+        });
         
-        // ACTUALIZAR INTERFAZ
-        document.getElementById('estado').textContent = "Sistema 3D Activo | CMFO Astronomía";
-        document.getElementById('info-panel').innerHTML = generarInfoTiempoReal();
-        
-        console.log("✅ Sistema 3D completamente operativo");
+        document.getElementById('mensaje-carga').textContent = "✅ Sistema 3D activo";
+        console.log("✅ Three.js inicializado correctamente");
         
     } catch (error) {
-        console.error("❌ Error crítico en inicialización:", error);
-        mostrarError("Error: " + error.message);
+        console.error("❌ Error en Three.js:", error);
+        document.getElementById('mensaje-carga').innerHTML = '❌ Error en visualización 3D<br><small>Mostrando alternativa</small>';
+        mostrarVisualizacionAlternativa();
     }
 }
 
-function configurarIluminacion() {
-    // LUZ SOLAR PRINCIPAL
-    const luzSolar = new THREE.DirectionalLight(0xffffff, 1.2);
-    luzSolar.position.set(50, 50, 50);
-    luzSolar.castShadow = true;
-    luzSolar.shadow.mapSize.width = 1024;
-    luzSolar.shadow.mapSize.height = 1024;
-    escena.add(luzSolar);
+function crearSistemaSolarBasico() {
+    console.log("🪐 Creando sistema solar básico...");
     
-    // LUZ AMBIENTAL
-    const luzAmbiental = new THREE.AmbientLight(0x333333, 0.4);
-    escena.add(luzAmbiental);
+    // SOL
+    const solGeometry = new THREE.SphereGeometry(2, 32, 32);
+    const solMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xffff00,
+        emissive: 0xffff00,
+        emissiveIntensity: 0.5
+    });
+    const sol = new THREE.Mesh(solGeometry, solMaterial);
+    sol.userData = { velocidad: 0.005 };
+    escena.add(sol);
     
-    // LUZ DE EFECTO ESPACIAL
-    const luzEspacial = new THREE.HemisphereLight(0x4477ff, 0x112233, 0.2);
-    escena.add(luzEspacial);
-}
-
-function crearSistemaSolar() {
-    console.log("🪐 Creando cuerpos celestes...");
+    // PLANETAS BÁSICOS
+    const planetas = [
+        { nombre: 'mercurio', radio: 0.3, distancia: 4, color: 0x8C7853, velocidad: 0.02 },
+        { nombre: 'venus', radio: 0.5, distancia: 6, color: 0xE6CD8C, velocidad: 0.015 },
+        { nombre: 'tierra', radio: 0.5, distancia: 8, color: 0x1E90FF, velocidad: 0.01 },
+        { nombre: 'marte', radio: 0.4, distancia: 10, color: 0xFF4500, velocidad: 0.008 },
+        { nombre: 'jupiter', radio: 1.0, distancia: 14, color: 0xDAA520, velocidad: 0.004 },
+        { nombre: 'saturno', radio: 0.8, distancia: 18, color: 0xF0E68C, velocidad: 0.002 }
+    ];
     
-    Object.keys(sistemaSolar).forEach(nombre => {
-        const cuerpo = sistemaSolar[nombre];
+    planetas.forEach(planeta => {
+        const geometry = new THREE.SphereGeometry(planeta.radio, 16, 16);
+        const material = new THREE.MeshPhongMaterial({ color: planeta.color });
+        const mesh = new THREE.Mesh(geometry, material);
         
-        // CREAR GEOMETRÍA Y MATERIAL
-        const geometria = new THREE.SphereGeometry(cuerpo.radio, 32, 32);
-        
-        // MATERIAL ESPECIAL PARA EL SOL (EMISIVO)
-        let material;
-        if (nombre === 'sol') {
-            material = new THREE.MeshPhongMaterial({ 
-                color: cuerpo.color,
-                emissive: cuerpo.color,
-                emissiveIntensity: 0.8,
-                shininess: 100
-            });
-        } else {
-            material = new THREE.MeshPhongMaterial({ 
-                color: cuerpo.color,
-                shininess: 30
-            });
-        }
-        
-        const mesh = new THREE.Mesh(geometria, material);
-        
-        // POSICIONAR EN EL ESPACIO
-        if (nombre === 'luna') {
-            // La Luna se posiciona relativa a la Tierra después
-            mesh.position.set(cuerpo.distancia, 0, 0);
-        } else {
-            mesh.position.set(cuerpo.distancia, 0, 0);
-        }
-        
-        // CONFIGURAR SOMBRAS
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        
-        // DATOS PARA ANIMACIÓN
+        mesh.position.x = planeta.distancia;
         mesh.userData = {
-            nombre: nombre,
-            velocidadRotacion: cuerpo.velocidad,
-            velocidadOrbital: nombre === 'sol' ? 0 : (365 / cuerpo.periodo) * 0.005,
-            distanciaOrbital: cuerpo.distancia,
+            velocidadRotacion: planeta.velocidad,
+            velocidadOrbital: planeta.velocidad * 0.5,
             anguloOrbital: Math.random() * Math.PI * 2,
-            radio: cuerpo.radio
+            distanciaOrbital: planeta.distancia
         };
         
         escena.add(mesh);
-        objetos[nombre] = mesh;
         
-        // CREAR ÓRBITA VISUAL (excepto para Sol y Luna)
-        if (nombre !== 'sol' && nombre !== 'luna') {
-            crearOrbitaVisual(cuerpo.distancia);
-        }
+        // CREAR ÓRBITA VISUAL
+        crearOrbitaVisual(planeta.distancia);
     });
     
-    console.log(`✅ Creados ${Object.keys(objetos).length} cuerpos celestes`);
+    console.log("✅ Sistema solar básico creado");
 }
 
 function crearOrbitaVisual(radio) {
     const puntos = [];
-    const segmentos = 64;
-    
-    for (let i = 0; i <= segmentos; i++) {
-        const angulo = (i / segmentos) * Math.PI * 2;
+    for (let i = 0; i <= 32; i++) {
+        const angulo = (i / 32) * Math.PI * 2;
         puntos.push(new THREE.Vector3(
             Math.cos(angulo) * radio,
             0,
@@ -312,249 +255,93 @@ function crearOrbitaVisual(radio) {
         ));
     }
     
-    const geometria = new THREE.BufferGeometry().setFromPoints(puntos);
+    const geometry = new THREE.BufferGeometry().setFromPoints(puntos);
     const material = new THREE.LineBasicMaterial({ 
         color: 0x444477,
         transparent: true,
-        opacity: 0.15
+        opacity: 0.2
     });
     
-    const orbita = new THREE.Line(geometria, material);
+    const orbita = new THREE.Line(geometry, material);
     escena.add(orbita);
-}
-
-function crearEstrellasFondo() {
-    const estrellasGeometria = new THREE.BufferGeometry();
-    const posiciones = [];
-    
-    // CREAR 2000 ESTRELLAS ALEATORIAS
-    for (let i = 0; i < 2000; i++) {
-        const radio = 100 + Math.random() * 400;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos((Math.random() * 2) - 1);
-        
-        posiciones.push(
-            radio * Math.sin(phi) * Math.cos(theta),
-            radio * Math.sin(phi) * Math.sin(theta),
-            radio * Math.cos(phi)
-        );
-    }
-    
-    estrellasGeometria.setAttribute('position', new THREE.Float32BufferAttribute(posiciones, 3));
-    
-    const materialEstrellas = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 1.0,
-        transparent: true
-    });
-    
-    const estrellas = new THREE.Points(estrellasGeometria, materialEstrellas);
-    escena.add(estrellas);
-}
-
-function configurarControles() {
-    // CONTROLES BÁSICOS DE TECLADO
-    document.addEventListener('keydown', (event) => {
-        const velocidad = 3;
-        switch(event.key) {
-            case 'ArrowUp': camara.position.y += velocidad; break;
-            case 'ArrowDown': camara.position.y -= velocidad; break;
-            case 'ArrowLeft': camara.position.x -= velocidad; break;
-            case 'ArrowRight': camara.position.x += velocidad; break;
-            case 'w': case 'W': camara.position.z -= velocidad; break;
-            case 's': case 'S': camara.position.z += velocidad; break;
-            case 'r': case 'R': reiniciarVista(); break;
-            case ' ': toggleAnimacion(); break;
-        }
-    });
-    
-    // CONTROLES DE RATÓN BÁSICOS
-    let mouseDown = false;
-    let lastX = 0, lastY = 0;
-    
-    renderizador.domElement.addEventListener('mousedown', (event) => {
-        mouseDown = true;
-        lastX = event.clientX;
-        lastY = event.clientY;
-    });
-    
-    renderizador.domElement.addEventListener('mouseup', () => {
-        mouseDown = false;
-    });
-    
-    renderizador.domElement.addEventListener('mousemove', (event) => {
-        if (mouseDown) {
-            const deltaX = event.clientX - lastX;
-            const deltaY = event.clientY - lastY;
-            
-            camara.position.x -= deltaX * 0.02;
-            camara.position.y += deltaY * 0.02;
-            
-            lastX = event.clientX;
-            lastY = event.clientY;
-        }
-    });
-    
-    // ZOOM CON RUEDA DEL RATÓN
-    renderizador.domElement.addEventListener('wheel', (event) => {
-        camara.position.z += event.deltaY * 0.1;
-    });
 }
 
 function animar() {
     requestAnimationFrame(animar);
     
-    if (animacionActiva) {
-        // ANIMAR ROTACIÓN Y ÓRBITAS
-        Object.keys(objetos).forEach(nombre => {
-            const objeto = objetos[nombre];
-            const datos = objeto.userData;
-            
-            if (nombre === 'sol') {
-                // Solo rotación para el sol
-                objeto.rotation.y += datos.velocidadRotacion;
-            } else if (nombre === 'luna') {
-                // La Luna orbita alrededor de la Tierra
-                const tierra = objetos['tierra'];
-                if (tierra) {
-                    datos.anguloOrbital += datos.velocidadOrbital;
-                    objeto.position.x = tierra.position.x + Math.cos(datos.anguloOrbital) * datos.distanciaOrbital;
-                    objeto.position.z = tierra.position.z + Math.sin(datos.anguloOrbital) * datos.distanciaOrbital;
-                    objeto.rotation.y += datos.velocidadRotacion;
+    if (animacionActiva && escena) {
+        // ANIMAR ROTACIÓN DE OBJETOS
+        escena.children.forEach(child => {
+            if (child.userData && child.userData.velocidadRotacion) {
+                child.rotation.y += child.userData.velocidadRotacion;
+                
+                // ANIMAR ÓRBITAS PARA PLANETAS
+                if (child.userData.velocidadOrbital) {
+                    child.userData.anguloOrbital += child.userData.velocidadOrbital;
+                    child.position.x = Math.cos(child.userData.anguloOrbital) * child.userData.distanciaOrbital;
+                    child.position.z = Math.sin(child.userData.anguloOrbital) * child.userData.distanciaOrbital;
                 }
-            } else {
-                // Planetas orbitando alrededor del sol
-                datos.anguloOrbital += datos.velocidadOrbital;
-                objeto.position.x = Math.cos(datos.anguloOrbital) * datos.distanciaOrbital;
-                objeto.position.z = Math.sin(datos.anguloOrbital) * datos.distanciaOrbital;
-                objeto.rotation.y += datos.velocidadRotacion;
             }
         });
-        
-        // ACTUALIZAR INFORMACIÓN EN TIEMPO REAL
-        actualizarInfoTiempoReal();
     }
     
-    renderizador.render(escena, camara);
+    if (renderizador && escena && camara) {
+        renderizador.render(escena, camara);
+    }
 }
 
-function redimensionar() {
-    if (!camara || !renderizador) return;
-    
-    const ancho = document.getElementById('contenedor3d').clientWidth;
-    const alto = 600;
-    
-    camara.aspect = ancho / alto;
-    camara.updateProjectionMatrix();
-    renderizador.setSize(ancho, alto);
+function mostrarVisualizacionAlternativa() {
+    const contenedor = document.getElementById('contenedor3d');
+    contenedor.innerHTML = `
+        <div style="color: #00ffff; text-align: center; padding: 50px;">
+            <h3>🌌 Visualización Alternativa</h3>
+            <p>El sistema 3D no está disponible en este dispositivo</p>
+            <p>Te recomendamos usar:</p>
+            <div style="margin: 20px 0;">
+                <a href="https://stellarium-web.org/" target="_blank" class="boton-3d" style="display: inline-block; text-decoration: none; margin: 10px;">
+                    🚀 Stellarium Web
+                </a>
+                <br>
+                <a href="https://www.solarsystemscope.com/" target="_blank" class="boton-3d" style="display: inline-block; text-decoration: none; margin: 10px;">
+                    🪐 Solar System Scope
+                </a>
+            </div>
+            <p style="font-size: 12px; margin-top: 20px;">
+                Estas plataformas ofrecen máxima precisión científica y compatibilidad universal
+            </p>
+        </div>
+    `;
 }
 
-// FUNCIONES DE CONTROL GLOBALES
+// FUNCIONES DE CONTROL
 window.cambiarVista = function(vista) {
     if (!camara) return;
     
     switch(vista) {
         case 'completa':
-            camara.position.set(0, 15, 50);
+            camara.position.set(0, 10, 30);
             break;
         case 'interior':
-            camara.position.set(0, 5, 20);
-            break;
-        case 'exterior':
-            camara.position.set(0, 10, 80);
+            camara.position.set(0, 5, 15);
             break;
         case 'tierra':
-            camara.position.set(15, 3, 15);
+            camara.position.set(10, 3, 10);
             break;
     }
-    
-    mostrarNotificacion(`Vista: ${vista}`);
 };
 
 window.toggleAnimacion = function() {
     animacionActiva = !animacionActiva;
     const boton = document.getElementById('btn-animacion');
     boton.textContent = animacionActiva ? '⏸️ Pausar Animación' : '▶️ Iniciar Animación';
-    mostrarNotificacion(animacionActiva ? 'Animación activada' : 'Animación pausada');
 };
 
-window.reiniciarVista = function() {
-    camara.position.set(0, 15, 50);
-    mostrarNotificacion('Vista reiniciada');
-};
-
-function generarInfoTiempoReal() {
-    return `
-        <div><strong>Sol:</strong> Radio: 696,340 km | Tipo: G2V</div>
-        <div><strong>Mercurio:</strong> Distancia: 0.39 AU | Período: 88 días</div>
-        <div><strong>Venus:</strong> Distancia: 0.72 AU | Período: 225 días</div>
-        <div><strong>Tierra:</strong> Distancia: 1.00 AU | Período: 365 días | Luna: 1</div>
-        <div><strong>Marte:</strong> Distancia: 1.52 AU | Período: 687 días</div>
-        <div><strong>Júpiter:</strong> Distancia: 5.20 AU | Período: 12 años</div>
-        <div><strong>Saturno:</strong> Distancia: 9.58 AU | Período: 29 años | Anillos: Sí</div>
-        <div><strong>Urano:</strong> Distancia: 19.22 AU | Período: 84 años</div>
-        <div><strong>Neptuno:</strong> Distancia: 30.05 AU | Período: 165 años</div>
-        <div style="margin-top: 10px; color: #00ffff; font-size: 12px;">
-            Última actualización: ${new Date().toLocaleTimeString()}
-        </div>
-    `;
-}
-
-function actualizarInfoTiempoReal() {
-    // Actualizar cada 60 frames (aproximadamente 1 segundo)
-    if (Math.random() < 0.016) {
-        document.getElementById('info-panel').innerHTML = generarInfoTiempoReal();
-    }
-}
-
-function mostrarNotificacion(mensaje) {
-    const notificacion = document.createElement('div');
-    notificacion.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #00ffff;
-        color: #000;
-        padding: 10px 15px;
-        border-radius: 5px;
-        font-weight: bold;
-        z-index: 1000;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    `;
-    notificacion.textContent = mensaje;
-    document.body.appendChild(notificacion);
-    
-    setTimeout(() => {
-        if (document.body.contains(notificacion)) {
-            document.body.removeChild(notificacion);
-        }
-    }, 2000);
-}
-
-function mostrarError(mensaje) {
-    const contenedor = document.getElementById('contenedor3d');
-    contenedor.innerHTML = `
-        <div style="color: #ff4444; text-align: center; padding: 50px; background: rgba(0,0,0,0.8); border-radius: 10px;">
-            <h3>❌ Error en Sistema 3D</h3>
-            <p>${mensaje}</p>
-            <button onclick="location.reload()" class="boton-3d" style="margin-top: 20px;">
-                🔄 Reiniciar Sistema
-            </button>
-        </div>
-    `;
-}
-
-// INICIAR SISTEMA CUANDO LA PÁGINA SE CARGE
-if (typeof THREE !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', iniciarSistema3D);
-} else {
-    document.getElementById('contenedor3d').innerHTML = `
-        <div style="color: #ff4444; text-align: center; padding: 50px;">
-            <h3>❌ Three.js no disponible</h3>
-            <p>Recarga la página o verifica tu conexión</p>
-        </div>
-    `;
-}
+// INICIAR AL CARGAR LA PÁGINA
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("📄 Página cargada, iniciando sistema...");
+    iniciarThreeJS();
+});
 </script>
 </body>
 </html>
+
