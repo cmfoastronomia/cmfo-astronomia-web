@@ -15,6 +15,7 @@
             border-radius: 8px;
             margin: 20px 0;
             position: relative;
+            overflow: hidden;
         }
         
         .panel-control {
@@ -53,6 +54,22 @@
             margin: 2px;
             border-radius: 4px;
             border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .etiqueta-planeta {
+            position: absolute;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 3px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -100%);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -141,7 +158,7 @@
 
 <script>
 // =============================================================================
-// SISTEMA SOLAR CMFO - IMPLEMENTACIÓN CIENTÍFICA
+// SISTEMA SOLAR CMFO - IMPLEMENTACIÓN CIENTÍFICA COMPLETA
 // Basado en: cmfo_interactive.py + cmfo_historical.py
 // =============================================================================
 
@@ -154,14 +171,55 @@ const CMFO_PARAMS = {
     PHI: 2.6712e-5
 };
 
+// TEXTURAS CIENTÍFICAS REALES (colores basados en datos NASA)
+const TEXTURAS_CIENTIFICAS = {
+    "sol": { 
+        color: 0xFFD700, 
+        emissive: 0xFF4500,
+        intensidad: 0.8,
+        nombre: "SOL - G2V",
+        descripcion: "Estrella tipo G2V - Radio: 696,340 km"
+    },
+    "mercurio": { 
+        color: 0x8C7853, 
+        nombre: "MERCURIO",
+        descripcion: "Planeta rocoso - Resonancia: 1.0817e-3"
+    },
+    "venus": { 
+        color: 0xE6CD8C, 
+        nombre: "VENUS", 
+        descripcion: "Atmósfera densa CO₂ - Resonancia: 2.6712e-5"
+    },
+    "tierra": { 
+        color: 0x1E90FF, 
+        nombre: "TIERRA",
+        descripcion: "Planeta azul - Resonancia: 1.0817e-3"
+    },
+    "marte": { 
+        color: 0xFF4500, 
+        nombre: "MARTE",
+        descripcion: "Planeta rojo - Resonancia: 2.337e-7" 
+    },
+    "jupiter": { 
+        color: 0xDAA520, 
+        nombre: "JÚPITER",
+        descripcion: "Gigante gaseoso - Resonancia: 5.883e-6"
+    },
+    "saturno": { 
+        color: 0xF0E68C, 
+        nombre: "SATURNO",
+        descripcion: "Sistema de anillos - Resonancia: 3.532e-7"
+    }
+};
+
 const RESONANCIAS_CMFO = {
-    "sol": { radio: 2.0, color: 0xFFD700, resonancia: 0 },
-    "mercurio": { radio: 0.3, color: 0x8C7853, resonancia: 1.0817e-3 },
-    "venus": { radio: 0.5, color: 0xE6CD8C, resonancia: 2.6712e-5 },
-    "tierra": { radio: 0.5, color: 0x1E90FF, resonancia: 1.0817e-3 },
-    "marte": { radio: 0.4, color: 0xFF4500, resonancia: 2.337e-7 },
-    "jupiter": { radio: 1.0, color: 0xDAA520, resonancia: 5.883e-6 },
-    "saturno": { radio: 0.8, color: 0xF0E68C, resonancia: 3.532e-7 }
+    "sol": { radio: 2.0, resonancia: 0 },
+    "mercurio": { radio: 0.3, resonancia: 1.0817e-3 },
+    "venus": { radio: 0.5, resonancia: 2.6712e-5 },
+    "tierra": { radio: 0.5, resonancia: 1.0817e-3 },
+    "marte": { radio: 0.4, resonancia: 2.337e-7 },
+    "jupiter": { radio: 1.0, resonancia: 5.883e-6 },
+    "saturno": { radio: 0.8, resonancia: 3.532e-7 }
 };
 
 // DATOS ORBITALES BASE (AU)
@@ -291,47 +349,60 @@ function iniciarSistemaCMFO() {
 }
 
 function crearSistemaSolarCMFO() {
-    console.log("🪐 Creando sistema solar con modelo CMFO...");
+    console.log("🪐 Creando sistema solar científico con texturas realistas...");
     
-    // CREAR SOL
-    const solGeometry = new THREE.SphereGeometry(2, 32, 32);
+    // CREAR SOL CON ASPECTO REALISTA
+    const solGeometry = new THREE.SphereGeometry(2, 64, 64);
     const solMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xFFD700,
-        emissive: 0xFFD700,
-        emissiveIntensity: 0.6
+        color: TEXTURAS_CIENTIFICAS.sol.color,
+        emissive: TEXTURAS_CIENTIFICAS.sol.emissive,
+        emissiveIntensity: TEXTURAS_CIENTIFICAS.sol.intensidad,
+        shininess: 100
     });
     const sol = new THREE.Mesh(solGeometry, solMaterial);
     sol.userData = { 
         nombre: "sol",
         tipo: "estrella",
-        velocidadRotacion: 0.005
+        velocidadRotacion: 0.005,
+        info: TEXTURAS_CIENTIFICAS.sol
     };
     escena.add(sol);
     objetosCMFO["sol"] = sol;
-    
-    // CREAR PLANETAS CON DATOS CMFO
+
+    // CREAR PLANETAS CON ASPECTO CIENTÍFICO
     Object.keys(RESONANCIAS_CMFO).forEach(nombre => {
         if (nombre === "sol") return;
         
         const datos = RESONANCIAS_CMFO[nombre];
-        const geometria = new THREE.SphereGeometry(datos.radio, 24, 24);
-        const material = new THREE.MeshPhongMaterial({ color: datos.color });
+        const textura = TEXTURAS_CIENTIFICAS[nombre];
+        
+        // GEOMETRÍA MÁS DETALLADA
+        const geometria = new THREE.SphereGeometry(datos.radio, 32, 32);
+        
+        // MATERIAL CON ASPECTO MÁS REALISTA
+        const material = new THREE.MeshPhongMaterial({ 
+            color: textura.color,
+            shininess: 30,
+            specular: 0x222222
+        });
+        
         const planeta = new THREE.Mesh(geometria, material);
         
-        // POSICIÓN INICIAL (será actualizada en la animación)
+        // POSICIÓN INICIAL
         const anguloInicial = Math.random() * Math.PI * 2;
         const posicion = calcular_posicion_orbital_cmfo(nombre, anguloInicial);
         
         planeta.position.set(posicion.x, posicion.y, posicion.z);
         
-        // DATOS PARA ANIMACIÓN Y CÁLCULOS CMFO
+        // DATOS COMPLETOS PARA ANIMACIÓN
         planeta.userData = {
             nombre: nombre,
             velocidadRotacion: 0.01 + Math.random() * 0.02,
             velocidadOrbital: 0.005 + Math.random() * 0.01,
             anguloOrbital: anguloInicial,
             resonancia: datos.resonancia,
-            correccionAplicada: false
+            correccionAplicada: false,
+            info: textura
         };
         
         escena.add(planeta);
@@ -341,7 +412,45 @@ function crearSistemaSolarCMFO() {
         crearOrbitaVisual(ORBITAS_BASE[nombre]);
     });
     
-    console.log(`✅ Sistema CMFO creado: ${Object.keys(objetosCMFO).length} cuerpos`);
+    // CREAR ETIQUETAS DE NOMBRES
+    crearEtiquetasPlanetas();
+    
+    console.log(`✅ Sistema científico creado: ${Object.keys(objetosCMFO).length} cuerpos con texturas realistas`);
+}
+
+function crearEtiquetasPlanetas() {
+    Object.keys(objetosCMFO).forEach(nombre => {
+        if (nombre === "sol") return;
+        
+        const etiqueta = document.createElement('div');
+        etiqueta.className = 'etiqueta-planeta';
+        etiqueta.id = `etiqueta-${nombre}`;
+        etiqueta.textContent = TEXTURAS_CIENTIFICAS[nombre].nombre;
+        document.getElementById('contenedor3d').appendChild(etiqueta);
+    });
+}
+
+function actualizarEtiquetasPlanetas() {
+    Object.keys(objetosCMFO).forEach(nombre => {
+        if (nombre === "sol") return;
+        
+        const planeta = objetosCMFO[nombre];
+        const etiqueta = document.getElementById(`etiqueta-${nombre}`);
+        
+        if (etiqueta && renderizador) {
+            // CONVERTIR POSICIÓN 3D A POSICIÓN 2D EN PANTALLA
+            const vector = new THREE.Vector3();
+            planeta.getWorldPosition(vector);
+            vector.project(camara);
+            
+            const x = (vector.x * 0.5 + 0.5) * renderizador.domElement.clientWidth;
+            const y = (-(vector.y * 0.5 + 0.5)) * renderizador.domElement.clientHeight;
+            
+            etiqueta.style.left = `${x}px`;
+            etiqueta.style.top = `${y}px`;
+            etiqueta.style.display = 'block';
+        }
+    });
 }
 
 function crearOrbitaVisual(radio) {
@@ -424,7 +533,8 @@ function animar() {
             }
         });
         
-        // ACTUALIZAR INTERFAZ CADA 30 FPS APROX
+        // ACTUALIZAR ETIQUETAS Y DATOS
+        actualizarEtiquetasPlanetas();
         if (Math.random() < 0.05) {
             actualizarDatosOrbitales();
         }
@@ -524,13 +634,15 @@ function actualizarDatosOrbitales() {
         const objeto = objetosCMFO[nombre];
         const datos = objeto.userData;
         const distancia = Math.sqrt(objeto.position.x**2 + objeto.position.z**2);
+        const info = TEXTURAS_CIENTIFICAS[nombre];
         
         html += `
-            <div style="margin: 5px 0; padding: 5px; background: rgba(0,255,255,0.05); border-radius: 3px;">
-                <strong>${nombre.toUpperCase()}</strong> | 
-                Dist: ${distancia.toFixed(2)} AU | 
-                Reson: ${datos.resonancia.toExponential(2)} |
-                CMFO: ${datos.correccionAplicada ? '✅' : '❌'}
+            <div style="margin: 5px 0; padding: 8px; background: rgba(0,255,255,0.08); border-radius: 4px; border-left: 3px solid ${datos.correccionAplicada ? '#0f0' : '#f00'};">
+                <strong>${info.nombre}</strong><br>
+                <span style="font-size: 10px; color: #66ffff;">${info.descripcion}</span><br>
+                Distancia: ${distancia.toFixed(3)} AU | 
+                Resonancia: ${datos.resonancia.toExponential(2)} |
+                CMFO: ${datos.correccionAplicada ? '✅ ACTIVO' : '❌ INACTIVO'}
             </div>
         `;
     });
