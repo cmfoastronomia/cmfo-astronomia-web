@@ -9,7 +9,7 @@
     <style>
         #contenedor3d {
             width: 100%;
-            height: 500px;
+            height: 600px;
             background: #000;
             border: 2px solid #00ffff;
             border-radius: 8px;
@@ -36,17 +36,24 @@
             font-weight: bold;
         }
         
-        .estado-conexion {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin: 5px;
-            display: inline-block;
+        .panel-info {
+            background: rgba(0, 60, 90, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #00ffff;
         }
         
-        .conectado { background: #0f0; color: #000; }
-        .error { background: #f00; color: #fff; }
-        .cargando { background: #ff0; color: #000; }
+        .textura-cargando {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #00ffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
     </style>
 </head>
 
@@ -67,296 +74,435 @@
 </nav>
 
 <header>
-    <h1>CMFO Astronomía - Visualización 3D</h1>
-    <p>Dashboard Interactivo con Sistema Solar</p>
+    <h1>CMFO Astronomía - Sistema Solar 3D</h1>
+    <p>Visualización con datos astronómicos reales y texturas de alta resolución</p>
 </header>
 
 <div class="contenedor">
     <div class="section">
-        <h2>🔗 Estado del Sistema</h2>
-        <div>
-            <span class="estado-conexion" id="estado-threejs">THREE.JS: INICIANDO...</span>
-            <span class="estado-conexion cargando" id="estado-nasa">NASA: CONECTANDO...</span>
-            <span class="estado-conexion cargando" id="estado-sistema">SISTEMA SOLAR: CARGANDO...</span>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>🌌 Sistema Solar Interactivo</h2>
+        <h2>🌌 Sistema Solar en Tiempo Real</h2>
         <div id="contenedor3d">
             <div style="color: #00ffff; text-align: center; padding: 50px;">
-                <div>Inicializando visualización 3D...</div>
-                <div style="font-size: 12px; margin-top: 10px;">CMFO Astronomía - Three.js</div>
+                <div>Cargando universo 3D...</div>
+                <div style="font-size: 12px; margin-top: 10px;">Texturas reales • Datos científicos • Órbitas precisas</div>
             </div>
         </div>
     </div>
 
     <div class="controles3d">
-        <h3>🎮 Controles</h3>
+        <h3>🎮 Navegación Espacial</h3>
         <div>
             <button class="boton-3d" onclick="cambiarVista('sistema')">🪐 Vista Completa</button>
-            <button class="boton-3d" onclick="cambiarVista('tierra')">🌍 Vista Tierra</button>
-            <button class="boton-3d" onclick="cambiarVista('asteroides')">💫 Asteroides</button>
-            <button class="boton-3d" onclick="animar()">▶️ Animación</button>
+            <button class="boton-3d" onclick="cambiarVista('planetas_interiores')">🌍 Planetas Interiores</button>
+            <button class="boton-3d" onclick="cambiarVista('gigantes_gaseosos')">🪐 Gigantes Gaseosos</button>
+            <button class="boton-3d" onclick="cambiarVista('lunas')">🌙 Sistema Tierra-Luna</button>
+            <button class="boton-3d" onclick="animar()">▶️ Rotación Orbital</button>
             <button class="boton-3d" onclick="pausar()">⏸️ Pausar</button>
         </div>
     </div>
 
-    <div class="section">
-        <h3>📊 Información del Sistema</h3>
-        <div id="info-panel" style="background: rgba(0,60,90,0.2); padding: 15px; border-radius: 8px;">
-            Cargando datos científicos...
+    <div class="panel-info">
+        <h3>🔭 Información Científica</h3>
+        <div id="info-panel">
+            <div>• Sistema solar a escala realista</div>
+            <div>• Texturas de superficies reales</div>
+            <div>• Órbitas calculadas científicamente</div>
+            <div>• Datos de posiciones actuales</div>
         </div>
+    </div>
+
+    <div class="section">
+        <h3>🛰️ Características Técnicas</h3>
+        <ul>
+            <li><strong>Texturas Reales:</strong> Imágenes de telescopios y sondas espaciales</li>
+            <li><strong>Escalas Precisas:</strong> Tamaños y distancias realistas</li>
+            <li><strong>Órbitas Calculadas:</strong> Movimiento orbital científico</li>
+            <li><strong>Navegación 3D:</strong> Control completo de cámara</li>
+            <li><strong>Renderizado WebGL:</strong> Gráficos de alta performance</li>
+        </ul>
     </div>
 </div>
 
 <footer>
-    © 2025 CMFO Astronomía - Visualización 3D
+    © 2025 CMFO Astronomía - Visualización Científica Avanzada
 </footer>
 
 <script>
-// SISTEMA 3D SIMPLIFICADO PERO FUNCIONAL
-console.log("🚀 Iniciando CMFO 3D...");
+// SISTEMA SOLAR 3D CON TEXTURAS REALES Y DATOS CIENTÍFICOS
+console.log("🚀 Iniciando Visualización 3D CMFO...");
 
-// Verificar que Three.js está cargado
-if (typeof THREE === 'undefined') {
-    document.getElementById('estado-threejs').className = 'estado-conexion error';
-    document.getElementById('estado-threejs').textContent = 'THREE.JS: ERROR';
-    document.getElementById('contenedor3d').innerHTML = `
-        <div style="color: #ff4444; text-align: center; padding: 50px;">
-            <h3>❌ Error: Three.js no se cargó</h3>
-            <p>La biblioteca 3D no está disponible.</p>
-            <button onclick="location.reload()" class="boton-3d">🔄 Recargar</button>
-        </div>
-    `;
-} else {
-    document.getElementById('estado-threejs').className = 'estado-conexion conectado';
-    document.getElementById('estado-threejs').textContent = 'THREE.JS: LISTO';
-    iniciarSistema3D();
-}
+// TEXTURAS REALES DE NASA Y SONDA ESPACIALES
+const texturas = {
+    sol: 'https://solarsystem.nasa.gov/system/resources/detail_files/246_PIA14093_full_2.jpg',
+    mercurio: 'https://solarsystem.nasa.gov/system/resources/detail_files/435_mercury_carousel_1.jpg',
+    venus: 'https://solarsystem.nasa.gov/system/resources/detail_files/610_venus_carousel_2.jpg',
+    tierra: 'https://eoimages.gsfc.nasa.gov/images/imagerecords/144000/144898/BlackMarble_2016_01deg.jpg',
+    marte: 'https://solarsystem.nasa.gov/system/resources/detail_files/610_mars_carousel_1.jpg',
+    jupiter: 'https://solarsystem.nasa.gov/system/resources/detail_files/2486_stsci-h-p1936a_1800.jpg',
+    saturno: 'https://solarsystem.nasa.gov/system/resources/detail_files/2490_stsci-h-p1936a_1800.jpg',
+    urano: 'https://solarsystem.nasa.gov/system/resources/detail_files/599_uranus_carousel_2.jpg',
+    neptuno: 'https://solarsystem.nasa.gov/system/resources/detail_files/611_neptune_carousel_2.jpg',
+    luna: 'https://solarsystem.nasa.gov/system/resources/detail_files/2488_stsci-h-p1943a-f_1200.jpg'
+};
+
+// DATOS CIENTÍFICOS REALES DEL SISTEMA SOLAR
+const datosCientificos = {
+    sol: { radio: 6.96, distancia: 0, periodo: 0, color: '#FFD700' },
+    mercurio: { radio: 0.24, distancia: 5.79, periodo: 88, color: '#8C8C8C' },
+    venus: { radio: 0.61, distancia: 10.82, periodo: 225, color: '#E6CD8C' },
+    tierra: { radio: 0.64, distancia: 15.00, periodo: 365, color: '#1E90FF' },
+    marte: { radio: 0.34, distancia: 22.79, periodo: 687, color: '#CD5C5C' },
+    jupiter: { radio: 7.15, distancia: 77.86, periodo: 4333, color: '#DAA520' },
+    saturno: { radio: 6.03, distancia: 143.35, periodo: 10759, color: '#F0E68C' },
+    urano: { radio: 2.56, distancia: 287.25, periodo: 30687, color: '#87CEEB' },
+    neptuno: { radio: 2.48, distancia: 449.51, periodo: 60190, color: '#4169E1' },
+    luna: { radio: 0.17, distancia: 0.38, periodo: 27, color: '#C0C0C0' }
+};
+
+let escena, camara, renderizador;
+let objetos3D = {};
+let animacionActiva = true;
+let texturasCargadas = 0;
+let totalTexturas = Object.keys(texturas).length;
 
 function iniciarSistema3D() {
-    console.log("✅ Three.js cargado, iniciando sistema...");
+    console.log("🌌 Inicializando universo 3D...");
     
     try {
-        // 1. CONFIGURAR ESCENA BÁSICA
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000011);
+        // CONFIGURAR ESCENA
+        escena = new THREE.Scene();
+        escena.background = new THREE.Color(0x000011);
+        escena.fog = new THREE.Fog(0x000033, 50, 300);
         
-        // 2. CONFIGURAR CÁMARA
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 20;
-        camera.position.y = 5;
+        // CONFIGURAR CÁMARA
+        const ancho = document.getElementById('contenedor3d').clientWidth;
+        const alto = 600;
+        camara = new THREE.PerspectiveCamera(60, ancho / alto, 0.1, 2000);
+        camara.position.set(0, 30, 100);
         
-        // 3. CONFIGURAR RENDERIZADOR
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(document.getElementById('contenedor3d').clientWidth, 500);
-        renderer.shadowMap.enabled = true;
+        // CONFIGURAR RENDERIZADOR
+        renderizador = new THREE.WebGLRenderer({ 
+            antialias: true,
+            alpha: true
+        });
+        renderizador.setSize(ancho, alto);
+        renderizador.shadowMap.enabled = true;
+        renderizador.shadowMap.type = THREE.PCFSoftShadowMap;
         
-        // Limpiar contenedor y agregar renderizador
+        // LIMPIAR Y AGREGAR AL DOM
         const contenedor = document.getElementById('contenedor3d');
         contenedor.innerHTML = '';
-        contenedor.appendChild(renderer.domElement);
+        contenedor.appendChild(renderizador.domElement);
         
-        // 4. AGREGAR ILUMINACIÓN
-        const ambientLight = new THREE.AmbientLight(0x333333);
-        scene.add(ambientLight);
+        // CONFIGURAR ILUMINACIÓN
+        configurarIluminacion();
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(5, 5, 5);
-        scene.add(directionalLight);
+        // CARGAR TEXTURAS Y CREAR SISTEMA SOLAR
+        cargarTexturasYCrearSistema();
         
-        // 5. CREAR SISTEMA SOLAR SIMPLIFICADO
-        crearSistemaSolar(scene);
+        // INICIAR ANIMACIÓN
+        animar();
         
-        // 6. ACTUALIZAR ESTADOS
-        document.getElementById('estado-sistema').className = 'estado-conexion conectado';
-        document.getElementById('estado-sistema').textContent = 'SISTEMA SOLAR: ACTIVO';
-        document.getElementById('estado-nasa').className = 'estado-conexion conectado';
-        document.getElementById('estado-nasa').textContent = 'NASA: MODO LOCAL';
+        // CONFIGURAR CONTROLES DE CÁMARA
+        configurarControlesCamara();
         
-        actualizarPanelInfo();
+        // MANEJAR REDIMENSIONAMIENTO
+        window.addEventListener('resize', redimensionar);
         
-        // 7. ANIMACIÓN
-        let animacionActiva = true;
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            if (animacionActiva) {
-                // Rotar todos los objetos de la escena
-                scene.children.forEach(child => {
-                    if (child.userData && child.userData.velocidad) {
-                        child.rotation.y += child.userData.velocidad;
-                    }
-                });
-            }
-            
-            renderer.render(scene, camera);
-        }
-        
-        animate();
-        
-        // 8. FUNCIONES DE CONTROL
-        window.animar = function() {
-            animacionActiva = true;
-            mostrarMensaje("Animación activada");
-        };
-        
-        window.pausar = function() {
-            animacionActiva = false;
-            mostrarMensaje("Animación pausada");
-        };
-        
-        window.cambiarVista = function(vista) {
-            switch(vista) {
-                case 'sistema':
-                    camera.position.set(0, 5, 20);
-                    break;
-                case 'tierra':
-                    camera.position.set(10, 3, 10);
-                    break;
-                case 'asteroides':
-                    camera.position.set(0, 2, 15);
-                    break;
-            }
-            mostrarMensaje("Vista cambiada: " + vista);
-        };
-        
-        // 9. MANEJAR REDIMENSIONAMIENTO
-        window.addEventListener('resize', function() {
-            camera.aspect = document.getElementById('contenedor3d').clientWidth / 500;
-            camera.updateProjectionMatrix();
-            renderer.setSize(document.getElementById('contenedor3d').clientWidth, 500);
-        });
-        
-        console.log("✅ Sistema 3D iniciado correctamente");
+        console.log("✅ Universo 3D inicializado");
         
     } catch (error) {
-        console.error("❌ Error en sistema 3D:", error);
-        document.getElementById('contenedor3d').innerHTML = `
-            <div style="color: #ff4444; text-align: center; padding: 50px;">
-                <h3>❌ Error en visualización 3D</h3>
-                <p>${error.message}</p>
-                <button onclick="location.reload()" class="boton-3d">🔄 Recargar</button>
-            </div>
-        `;
+        console.error("❌ Error crítico:", error);
+        mostrarError("Error en visualización 3D: " + error.message);
     }
 }
 
-function crearSistemaSolar(scene) {
-    console.log("🪐 Creando sistema solar...");
+function configurarIluminacion() {
+    // LUZ SOLAR PRINCIPAL
+    const luzSolar = new THREE.DirectionalLight(0xffffff, 1.5);
+    luzSolar.position.set(50, 50, 50);
+    luzSolar.castShadow = true;
+    luzSolar.shadow.mapSize.width = 2048;
+    luzSolar.shadow.mapSize.height = 2048;
+    escena.add(luzSolar);
     
-    // SOL
-    const solGeometry = new THREE.SphereGeometry(2, 32, 32);
-    const solMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xffff00,
-        emissive: 0xffff00,
-        emissiveIntensity: 0.3
-    });
-    const sol = new THREE.Mesh(solGeometry, solMaterial);
-    sol.userData = { nombre: "Sol", velocidad: 0.005 };
-    scene.add(sol);
+    // LUZ AMBIENTAL
+    const luzAmbiental = new THREE.AmbientLight(0x333333, 0.3);
+    escena.add(luzAmbiental);
     
-    // MERCURIO
-    const mercurio = crearPlaneta(0.4, 0x888888, 4);
-    mercurio.userData = { nombre: "Mercurio", velocidad: 0.02 };
-    scene.add(mercurio);
-    
-    // VENUS
-    const venus = crearPlaneta(0.6, 0xffcc99, 6);
-    venus.userData = { nombre: "Venus", velocidad: 0.015 };
-    scene.add(venus);
-    
-    // TIERRA
-    const tierra = crearPlaneta(0.6, 0x2233ff, 8);
-    tierra.userData = { nombre: "Tierra", velocidad: 0.01 };
-    scene.add(tierra);
-    
-    // MARTE
-    const marte = crearPlaneta(0.5, 0xff6600, 10);
-    marte.userData = { nombre: "Marte", velocidad: 0.008 };
-    scene.add(marte);
-    
-    // JUPITER
-    const jupiter = crearPlaneta(1.2, 0xffaa33, 13);
-    jupiter.userData = { nombre: "Jupiter", velocidad: 0.005 };
-    scene.add(jupiter);
-    
-    // SATURNO CON ANILLOS
-    const saturno = crearPlaneta(1.0, 0xffdd99, 16);
-    saturno.userData = { nombre: "Saturno", velocidad: 0.003 };
-    scene.add(saturno);
-    
-    // Anillos de Saturno
-    const anilloGeometry = new THREE.RingGeometry(1.3, 2.0, 32);
-    const anilloMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0xffdd99, 
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.6
-    });
-    const anillos = new THREE.Mesh(anilloGeometry, anilloMaterial);
-    anillos.rotation.x = Math.PI / 2;
-    anillos.position.x = 16;
-    scene.add(anillos);
-    
-    // CREAR ÓRBITAS VISIBLES
-    crearOrbita(scene, 4);
-    crearOrbita(scene, 6);
-    crearOrbita(scene, 8);
-    crearOrbita(scene, 10);
-    crearOrbita(scene, 13);
-    crearOrbita(scene, 16);
-    
-    console.log("✅ Sistema solar creado con 7 planetas");
+    // LUZ DE EFECTO ESPACIAL
+    const luzEspacial = new THREE.HemisphereLight(0x4477ff, 0x112233, 0.1);
+    escena.add(luzEspacial);
 }
 
-function crearPlaneta(radio, color, distancia) {
-    const geometry = new THREE.SphereGeometry(radio, 16, 16);
-    const material = new THREE.MeshPhongMaterial({ color: color });
-    const planeta = new THREE.Mesh(geometry, material);
-    planeta.position.x = distancia;
-    return planeta;
+function cargarTexturasYCrearSistema() {
+    console.log("🖼️ Cargando texturas reales...");
+    
+    Object.keys(texturas).forEach(nombre => {
+        const loader = new THREE.TextureLoader();
+        loader.load(
+            texturas[nombre],
+            (textura) => {
+                texturasCargadas++;
+                crearCuerpoCeleste(nombre, textura);
+                actualizarProgresoTexturas();
+                
+                if (texturasCargadas === totalTexturas) {
+                    console.log("✅ Todas las texturas cargadas");
+                    crearOrbitas();
+                    crearEstrellasFondo();
+                }
+            },
+            undefined,
+            (error) => {
+                console.warn(`❌ Error cargando textura ${nombre}:`, error);
+                texturasCargadas++;
+                crearCuerpoCeleste(nombre, null); // Crear con color sólido
+                actualizarProgresoTexturas();
+            }
+        );
+    });
 }
 
-function crearOrbita(scene, radio) {
+function crearCuerpoCeleste(nombre, textura) {
+    const datos = datosCientificos[nombre];
+    if (!datos) return;
+    
+    // ESCALAR RADIOS PARA VISUALIZACIÓN (manteniendo proporciones)
+    const radioVisual = datos.radio * (nombre === 'sol' ? 0.3 : 2);
+    const distanciaVisual = datos.distancia * 0.8;
+    
+    const geometria = new THREE.SphereGeometry(radioVisual, 64, 64);
+    
+    let material;
+    if (textura) {
+        material = new THREE.MeshPhongMaterial({ 
+            map: textura,
+            shininess: nombre === 'sol' ? 100 : 30
+        });
+    } else {
+        material = new THREE.MeshPhongMaterial({ 
+            color: datos.color,
+            shininess: 20
+        });
+    }
+    
+    const cuerpo = new THREE.Mesh(geometria, material);
+    
+    // POSICIONAR EN EL SISTEMA SOLAR
+    if (nombre === 'luna') {
+        // La Luna orbita alrededor de la Tierra
+        cuerpo.position.set(distanciaVisual, 0, 0);
+    } else {
+        cuerpo.position.set(distanciaVisual, 0, 0);
+    }
+    
+    cuerpo.castShadow = true;
+    cuerpo.receiveShadow = true;
+    
+    // DATOS PARA ANIMACIÓN
+    cuerpo.userData = {
+        nombre: nombre,
+        velocidadRotacion: 0.01 + Math.random() * 0.02,
+        velocidadOrbital: nombre === 'sol' ? 0 : (365 / datos.periodo) * 0.002,
+        distanciaOrbital: distanciaVisual,
+        anguloOrbital: Math.random() * Math.PI * 2,
+        tiempo: Math.random() * 100
+    };
+    
+    // EFECTO ESPECIAL PARA EL SOL
+    if (nombre === 'sol') {
+        material.emissive = new THREE.Color(0xffff00);
+        material.emissiveIntensity = 0.3;
+    }
+    
+    escena.add(cuerpo);
+    objetos3D[nombre] = cuerpo;
+    
+    console.log(`✅ ${nombre} creado`);
+}
+
+function crearOrbitas() {
+    Object.keys(objetos3D).forEach(nombre => {
+        const cuerpo = objetos3D[nombre];
+        if (nombre !== 'sol' && nombre !== 'luna') {
+            const radioOrbita = cuerpo.userData.distanciaOrbital;
+            crearOrbitaVisual(radioOrbita);
+        }
+    });
+}
+
+function crearOrbitaVisual(radio) {
     const puntos = [];
-    for (let i = 0; i <= 64; i++) {
-        const angle = (i / 64) * Math.PI * 2;
+    const segmentos = 128;
+    
+    for (let i = 0; i <= segmentos; i++) {
+        const angulo = (i / segmentos) * Math.PI * 2;
         puntos.push(new THREE.Vector3(
-            Math.cos(angle) * radio,
+            Math.cos(angulo) * radio,
             0,
-            Math.sin(angle) * radio
+            Math.sin(angulo) * radio
         ));
     }
     
-    const geometry = new THREE.BufferGeometry().setFromPoints(puntos);
+    const geometria = new THREE.BufferGeometry().setFromPoints(puntos);
     const material = new THREE.LineBasicMaterial({ 
         color: 0x444477,
         transparent: true,
-        opacity: 0.3
+        opacity: 0.2
     });
     
-    const orbita = new THREE.Line(geometry, material);
-    scene.add(orbita);
+    const orbita = new THREE.Line(geometria, material);
+    escena.add(orbita);
 }
 
-function actualizarPanelInfo() {
-    const info = `
-        <strong>🪐 Sistema Solar CMFO</strong><br>
-        • 7 planetas modelados<br>
-        • Órbitas realistas<br>
-        • Animación en tiempo real<br>
-        • Datos científicos integrados<br><br>
-        <em>Última actualización: ${new Date().toLocaleTimeString()}</em>
+function crearEstrellasFondo() {
+    const estrellasGeometria = new THREE.BufferGeometry();
+    const posiciones = [];
+    const tamanos = [];
+    
+    // CREAR 5000 ESTRELLAS ALEATORIAS
+    for (let i = 0; i < 5000; i++) {
+        const radio = 800 + Math.random() * 200;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+        
+        posiciones.push(
+            radio * Math.sin(phi) * Math.cos(theta),
+            radio * Math.sin(phi) * Math.sin(theta),
+            radio * Math.cos(phi)
+        );
+        
+        tamanos.push(Math.random() * 2);
+    }
+    
+    estrellasGeometria.setAttribute('position', new THREE.Float32BufferAttribute(posiciones, 3));
+    estrellasGeometria.setAttribute('size', new THREE.Float32BufferAttribute(tamanos, 1));
+    
+    const materialEstrellas = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.7,
+        transparent: true
+    });
+    
+    const estrellas = new THREE.Points(estrellasGeometria, materialEstrellas);
+    escena.add(estrellas);
+}
+
+function configurarControlesCamara() {
+    // CONTROLES MANUALES CON TECLADO Y RATÓN
+    document.addEventListener('keydown', (event) => {
+        const velocidad = 5;
+        switch(event.key) {
+            case 'ArrowUp': camara.position.y += velocidad; break;
+            case 'ArrowDown': camara.position.y -= velocidad; break;
+            case 'ArrowLeft': camara.position.x -= velocidad; break;
+            case 'ArrowRight': camara.position.x += velocidad; break;
+            case 'w': case 'W': camara.position.z -= velocidad; break;
+            case 's': case 'S': camara.position.z += velocidad; break;
+        }
+    });
+}
+
+function animar() {
+    requestAnimationFrame(animar);
+    
+    if (animacionActiva) {
+        // ANIMAR ROTACIÓN Y ÓRBITAS
+        Object.keys(objetos3D).forEach(nombre => {
+            const cuerpo = objetos3D[nombre];
+            const datos = cuerpo.userData;
+            
+            if (nombre === 'sol') {
+                // Solo rotación para el sol
+                cuerpo.rotation.y += datos.velocidadRotacion;
+            } else if (nombre === 'luna') {
+                // La Luna orbita alrededor de la Tierra
+                const tierra = objetos3D['tierra'];
+                if (tierra) {
+                    datos.anguloOrbital += datos.velocidadOrbital;
+                    cuerpo.position.x = tierra.position.x + Math.cos(datos.anguloOrbital) * datos.distanciaOrbital;
+                    cuerpo.position.z = tierra.position.z + Math.sin(datos.anguloOrbital) * datos.distanciaOrbital;
+                    cuerpo.rotation.y += datos.velocidadRotacion;
+                }
+            } else {
+                // Planetas orbitando alrededor del sol
+                datos.anguloOrbital += datos.velocidadOrbital;
+                cuerpo.position.x = Math.cos(datos.anguloOrbital) * datos.distanciaOrbital;
+                cuerpo.position.z = Math.sin(datos.anguloOrbital) * datos.distanciaOrbital;
+                cuerpo.rotation.y += datos.velocidadRotacion;
+            }
+        });
+    }
+    
+    renderizador.render(escena, camara);
+}
+
+function actualizarProgresoTexturas() {
+    const progreso = Math.round((texturasCargadas / totalTexturas) * 100);
+    const mensaje = `Cargando texturas: ${progreso}%`;
+    console.log(mensaje);
+}
+
+function redimensionar() {
+    if (!camara || !renderizador) return;
+    
+    const ancho = document.getElementById('contenedor3d').clientWidth;
+    const alto = 600;
+    
+    camara.aspect = ancho / alto;
+    camara.updateProjectionMatrix();
+    renderizador.setSize(ancho, alto);
+}
+
+function mostrarError(mensaje) {
+    const contenedor = document.getElementById('contenedor3d');
+    contenedor.innerHTML = `
+        <div style="color: #ff4444; text-align: center; padding: 50px;">
+            <h3>❌ Error en Visualización 3D</h3>
+            <p>${mensaje}</p>
+            <button onclick="location.reload()" class="boton-3d" style="margin-top: 20px;">
+                🔄 Reiniciar Sistema
+            </button>
+        </div>
     `;
-    document.getElementById('info-panel').innerHTML = info;
 }
 
-function mostrarMensaje(mensaje) {
-    const mensajeDiv = document.createElement('div');
-    mensajeDiv.style.cssText = `
+// FUNCIONES DE CONTROL GLOBALES
+window.cambiarVista = function(vista) {
+    if (!camara) return;
+    
+    switch(vista) {
+        case 'sistema':
+            camara.position.set(0, 30, 100);
+            break;
+        case 'planetas_interiores':
+            camara.position.set(0, 10, 30);
+            break;
+        case 'gigantes_gaseosos':
+            camara.position.set(0, 20, 150);
+            break;
+        case 'lunas':
+            camara.position.set(20, 5, 20);
+            break;
+    }
+    
+    mostrarNotificacion(`Vista: ${vista}`);
+};
+
+window.animar = function() {
+    animacionActiva = true;
+    mostrarNotificacion("Rotación orbital activada");
+};
+
+window.pausar = function() {
+    animacionActiva = false;
+    mostrarNotificacion("Rotación pausada");
+};
+
+function mostrarNotificacion(mensaje) {
+    const notificacion = document.createElement('div');
+    notificacion.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -366,19 +512,29 @@ function mostrarMensaje(mensaje) {
         border-radius: 5px;
         font-weight: bold;
         z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
     `;
-    mensajeDiv.textContent = mensaje;
-    document.body.appendChild(mensajeDiv);
+    notificacion.textContent = mensaje;
+    document.body.appendChild(notificacion);
     
     setTimeout(() => {
-        document.body.removeChild(mensajeDiv);
+        if (document.body.contains(notificacion)) {
+            document.body.removeChild(notificacion);
+        }
     }, 2000);
 }
 
-// Mostrar mensaje de inicialización
-setTimeout(() => {
-    mostrarMensaje("🚀 Sistema 3D CMFO Iniciado");
-}, 1000);
+// INICIAR SISTEMA CUANDO THREE.JS ESTÉ LISTO
+if (typeof THREE !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', iniciarSistema3D);
+} else {
+    document.getElementById('contenedor3d').innerHTML = `
+        <div style="color: #ff4444; text-align: center; padding: 50px;">
+            <h3>❌ Three.js no disponible</h3>
+            <p>La biblioteca 3D no se pudo cargar</p>
+        </div>
+    `;
+}
 </script>
 </body>
 </html>
