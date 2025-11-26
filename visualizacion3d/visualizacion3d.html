@@ -25,16 +25,18 @@
             font-size: 14px;
             font-weight: bold;
             background: rgba(0, 0, 0, 0.95);
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 8px 14px;
+            border-radius: 10px;
             pointer-events: none;
             z-index: 1000;
-            border: 2px solid rgba(0, 255, 255, 0.7);
+            border: 2px solid rgba(0, 255, 255, 0.8);
             white-space: nowrap;
-            text-shadow: 0 0 8px #000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            text-shadow: 0 0 10px #000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.9);
             transform: translate(-50%, -100%);
-            margin-top: -10px;
+            text-align: center;
+            min-width: 100px;
+            backdrop-filter: blur(5px);
         }
         
         .panel-control {
@@ -547,7 +549,7 @@ function crearSistemaSolar() {
             crearOrbitaVisual(cuerpo.distancia);
         }
         
-        // ANILLOS DE SATURNO
+        // ANILLOS DE SATURNO (CORREGIDOS - MUY VISIBLES)
         if (nombre === "saturno") {
             crearAnillosSaturno(mesh.position, cuerpo.radio);
         }
@@ -557,46 +559,130 @@ function crearSistemaSolar() {
 }
 
 function crearAnillosSaturno(posicion, radioPlaneta) {
-    const geometriaAnillos = new THREE.RingGeometry(radioPlaneta * 1.5, radioPlaneta * 2.5, 64);
-    const texturaAnillos = crearTexturaAnillos();
+    // CREAR MÚLTIPLES ANILLOS CON DIFERENTES OPACIDADES
+    const anillosGrupo = new THREE.Group();
     
-    const materialAnillos = new THREE.MeshBasicMaterial({
-        map: texturaAnillos,
+    // Anillo principal (más visible)
+    const geometriaAnilloPrincipal = new THREE.RingGeometry(radioPlaneta * 1.6, radioPlaneta * 2.3, 128);
+    const texturaAnilloPrincipal = crearTexturaAnilloPrincipal();
+    
+    const materialAnilloPrincipal = new THREE.MeshBasicMaterial({
+        map: texturaAnilloPrincipal,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.9  // MUCHO MÁS VISIBLE
     });
     
-    const anillos = new THREE.Mesh(geometriaAnillos, materialAnillos);
-    anillos.rotation.x = Math.PI / 2;
-    anillos.position.copy(posicion);
-    escena.add(anillos);
-    objetos.anillosSaturno = anillos;
+    const anilloPrincipal = new THREE.Mesh(geometriaAnilloPrincipal, materialAnilloPrincipal);
+    anilloPrincipal.rotation.x = Math.PI / 2;
+    anillosGrupo.add(anilloPrincipal);
+    
+    // Anillo exterior (más tenue)
+    const geometriaAnilloExterior = new THREE.RingGeometry(radioPlaneta * 2.3, radioPlaneta * 2.7, 128);
+    const texturaAnilloExterior = crearTexturaAnilloExterior();
+    
+    const materialAnilloExterior = new THREE.MeshBasicMaterial({
+        map: texturaAnilloExterior,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.6
+    });
+    
+    const anilloExterior = new THREE.Mesh(geometriaAnilloExterior, materialAnilloExterior);
+    anilloExterior.rotation.x = Math.PI / 2;
+    anillosGrupo.add(anilloExterior);
+    
+    // Anillo interior (más tenue)
+    const geometriaAnilloInterior = new THREE.RingGeometry(radioPlaneta * 1.3, radioPlaneta * 1.6, 128);
+    const texturaAnilloInterior = crearTexturaAnilloInterior();
+    
+    const materialAnilloInterior = new THREE.MeshBasicMaterial({
+        map: texturaAnilloInterior,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.7
+    });
+    
+    const anilloInterior = new THREE.Mesh(geometriaAnilloInterior, materialAnilloInterior);
+    anilloInterior.rotation.x = Math.PI / 2;
+    anillosGrupo.add(anilloInterior);
+    
+    anillosGrupo.position.copy(posicion);
+    escena.add(anillosGrupo);
+    objetos.anillosSaturno = anillosGrupo;
 }
 
-function crearTexturaAnillos() {
+function crearTexturaAnilloPrincipal() {
     const canvas = document.createElement('canvas');
     const size = 512;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
     
-    // ANILLOS CON BANDAS
-    for (let i = 0; i < 5; i++) {
-        const radioInterno = size * 0.2 + i * size * 0.1;
-        const radioExterno = radioInterno + size * 0.08;
-        const opacidad = 0.3 + Math.random() * 0.5;
+    // ANILLO PRINCIPAL MUY VISIBLE
+    const gradient = ctx.createRadialGradient(size/2, size/2, size*0.3, size/2, size/2, size*0.45);
+    gradient.addColorStop(0, 'rgba(220, 200, 150, 0.9)');
+    gradient.addColorStop(0.5, 'rgba(240, 220, 170, 1.0)');
+    gradient.addColorStop(1, 'rgba(200, 180, 140, 0.8)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size*0.45, 0, Math.PI * 2);
+    ctx.arc(size/2, size/2, size*0.3, 0, Math.PI * 2, true);
+    ctx.fill();
+    
+    // BANDAS DENTRO DEL ANILLO
+    for (let i = 0; i < 8; i++) {
+        const radio = size*0.3 + (i * size*0.02);
+        const ancho = size*0.01;
+        const opacidad = 0.3 + Math.random() * 0.4;
         
-        const gradient = ctx.createRadialGradient(size/2, size/2, radioInterno, size/2, size/2, radioExterno);
-        gradient.addColorStop(0, `rgba(200, 180, 120, ${opacidad})`);
-        gradient.addColorStop(1, `rgba(160, 140, 100, ${opacidad * 0.7})`);
-        
-        ctx.fillStyle = gradient;
+        ctx.strokeStyle = `rgba(180, 160, 120, ${opacidad})`;
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(size/2, size/2, radioExterno, 0, Math.PI * 2);
-        ctx.arc(size/2, size/2, radioInterno, 0, Math.PI * 2, true);
-        ctx.fill();
+        ctx.arc(size/2, size/2, radio, 0, Math.PI * 2);
+        ctx.stroke();
     }
+    
+    return new THREE.CanvasTexture(canvas);
+}
+
+function crearTexturaAnilloExterior() {
+    const canvas = document.createElement('canvas');
+    const size = 512;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    const gradient = ctx.createRadialGradient(size/2, size/2, size*0.45, size/2, size/2, size*0.5);
+    gradient.addColorStop(0, 'rgba(200, 180, 140, 0.7)');
+    gradient.addColorStop(1, 'rgba(180, 160, 120, 0.4)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size*0.5, 0, Math.PI * 2);
+    ctx.arc(size/2, size/2, size*0.45, 0, Math.PI * 2, true);
+    ctx.fill();
+    
+    return new THREE.CanvasTexture(canvas);
+}
+
+function crearTexturaAnilloInterior() {
+    const canvas = document.createElement('canvas');
+    const size = 512;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    const gradient = ctx.createRadialGradient(size/2, size/2, size*0.25, size/2, size/2, size*0.3);
+    gradient.addColorStop(0, 'rgba(180, 160, 120, 0.8)');
+    gradient.addColorStop(1, 'rgba(160, 140, 100, 0.6)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size*0.3, 0, Math.PI * 2);
+    ctx.arc(size/2, size/2, size*0.25, 0, Math.PI * 2, true);
+    ctx.fill();
     
     return new THREE.CanvasTexture(canvas);
 }
@@ -683,147 +769,10 @@ function actualizarEtiquetas() {
             cuerpo.getWorldPosition(vector);
             vector.project(camara);
             
-            // CONVERTIR COORDENADAS 3D A 2D
+            // CONVERTIR COORDENADAS 3D A 2D - CORRECCIÓN DE POSICIÓN
             const x = (vector.x * 0.5 + 0.5) * renderizador.domElement.clientWidth;
             const y = (-(vector.y * 0.5 + 0.5)) * renderizador.domElement.clientHeight;
             
-            // SOLO MOSTRAR SI ESTÁ EN CAMPO DE VISIÓN
-            if (vector.z > 0 && vector.z < 1 && 
-                x > -100 && x < renderizador.domElement.clientWidth + 100 &&
-                y > -100 && y < renderizador.domElement.clientHeight + 100) {
-                
-                etiqueta.style.left = `${x}px`;
-                etiqueta.style.top = `${y}px`;
-                etiqueta.style.display = 'block';
-                
-                // EVITAR QUE SE SALGA DE LA PANTALLA
-                if (x < 80) etiqueta.style.left = '80px';
-                if (x > renderizador.domElement.clientWidth - 120) 
-                    etiqueta.style.left = `${renderizador.domElement.clientWidth - 120}px`;
-                if (y < 50) etiqueta.style.top = '50px';
-                if (y > renderizador.domElement.clientHeight - 40) 
-                    etiqueta.style.top = `${renderizador.domElement.clientHeight - 40}px`;
-                    
-            } else {
-                etiqueta.style.display = 'none';
-            }
-        }
-    });
-}
-
-function animar() {
-    requestAnimationFrame(animar);
-    
-    if (animacionActiva) {
-        Object.keys(objetos).forEach(nombre => {
-            const objeto = objetos[nombre];
-            const datos = objeto.userData;
-            
-            if (datos) {
-                // ROTACIÓN
-                objeto.rotation.y += datos.velocidadRotacion;
-                
-                // TRASLACIÓN ORBITAL
-                if (nombre !== "sol" && nombre !== "anillosSaturno") {
-                    datos.anguloOrbital += datos.velocidadOrbital;
-                    objeto.position.x = Math.cos(datos.anguloOrbital) * datos.distanciaOrbital;
-                    objeto.position.z = Math.sin(datos.anguloOrbital) * datos.distanciaOrbital;
-                    
-                    // ACTUALIZAR ANILLOS DE SATURNO
-                    if (nombre === "saturno" && objetos.anillosSaturno) {
-                        objetos.anillosSaturno.position.copy(objeto.position);
-                    }
-                }
-            }
-        });
-        
-        // ACTUALIZAR ETIQUETAS EN TIEMPO REAL
-        actualizarEtiquetas();
-    }
-    
-    renderizador.render(escena, camara);
-}
-
-function configurarControles() {
-    let mouseDown = false;
-    let lastX = 0;
-    let lastY = 0;
-    
-    renderizador.domElement.addEventListener('mousedown', (e) => {
-        mouseDown = true;
-        lastX = e.clientX;
-        lastY = e.clientY;
-    });
-    
-    renderizador.domElement.addEventListener('mouseup', () => {
-        mouseDown = false;
-    });
-    
-    renderizador.domElement.addEventListener('mousemove', (e) => {
-        if (!mouseDown) return;
-        
-        const deltaX = e.clientX - lastX;
-        const deltaY = e.clientY - lastY;
-        
-        camara.position.x -= deltaX * 0.01;
-        camara.position.y += deltaY * 0.01;
-        
-        lastX = e.clientX;
-        lastY = e.clientY;
-    });
-    
-    // ZOOM CON RUEDA
-    renderizador.domElement.addEventListener('wheel', (e) => {
-        camara.position.z += e.deltaY * 0.1;
-    });
-}
-
-// CONTROLES GLOBALES
-window.cambiarVista = function(vista) {
-    switch(vista) {
-        case 'completa': 
-            camara.position.set(0, 15, 50);
-            break;
-        case 'interior': 
-            camara.position.set(0, 8, 25);
-            break;
-        case 'gigantes': 
-            camara.position.set(0, 12, 70);
-            break;
-    }
-};
-
-window.toggleAnimacion = function() {
-    animacionActiva = !animacionActiva;
-    document.getElementById('btnAnimacion').textContent = 
-        animacionActiva ? '⏸️ Pausar Animación' : '▶️ Iniciar Animación';
-};
-
-window.toggleCMFO = function() {
-    cmfoActivo = !cmfoActivo;
-    document.getElementById('btnCMFO').textContent = 
-        `🔧 CMFO: ${cmfoActivo ? 'ON' : 'OFF'}`;
-};
-
-// INICIALIZACIÓN
-if (typeof THREE !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', iniciarSistema);
-    window.addEventListener('resize', () => {
-        if (renderizador && camara) {
-            const contenedor = document.getElementById('contenedor3d');
-            camara.aspect = contenedor.clientWidth / 600;
-            camara.updateProjectionMatrix();
-            renderizador.setSize(contenedor.clientWidth, 600);
-        }
-    });
-} else {
-    document.getElementById('contenedor3d').innerHTML = `
-        <div style="color: #ff4444; text-align: center; padding: 50px;">
-            <h3>❌ Three.js no disponible</h3>
-            <p>El simulador requiere WebGL</p>
-        </div>
-    `;
-}
-</script>
-</body>
-</html>
+            // CALCULAR DISTANCIA PARA AJUSTAR POSICIÓN DE ETIQUETA
+            const distancia = cuerpo.position.distanceTo(camara.position);
+            const offsetY = -30 - (distancia * 0.5); // AJ
