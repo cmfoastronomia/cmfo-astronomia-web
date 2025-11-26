@@ -1,426 +1,672 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sistema Solar Procedural (JS + WebGL)</title>
-<style>
-  html,body{height:100%;margin:0;background:#000}
-  canvas{display:block;width:100%;height:100%;}
-  #ui{
-    position:fixed;right:12px;top:12px;z-index:10;color:#ddd;
-    font-family:system-ui,Segoe UI,Roboto;backdrop-filter: blur(6px);
-    background: rgba(0,0,0,0.3); padding:10px;border-radius:8px;
-  }
-  label{display:block;margin:6px 0;font-size:13px}
-  input[type=range]{width:180px}
-  button{margin-top:6px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Solar Realista - CMFO Astronomía</title>
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        #contenedor3d {
+            width: 100%;
+            height: 600px;
+            background: #000;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .etiqueta-cuerpo {
+            position: absolute;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 4px 10px;
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 1000;
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            white-space: nowrap;
+            text-shadow: 0 0 5px #000;
+        }
+        
+        .panel-control {
+            background: rgba(0, 40, 60, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #00cccc;
+        }
+        
+        .boton-control {
+            background: linear-gradient(135deg, #0066cc, #00cccc);
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
-<canvas id="gl"></canvas>
-<div id="ui">
-  <label>Velocidad global <input id="speed" type="range" min="0" max="2" step="0.01" value="1"></label>
-  <label>Escala de ruido <input id="noiseScale" type="range" min="0.2" max="6" step="0.01" value="1.6"></label>
-  <label>Mostrar órbitas <input id="orbits" type="checkbox" checked></label>
-  <button id="reset">Reiniciar cámara</button>
-  <div style="margin-top:6px;font-size:12px;color:#aaa">Haz clic-drag para rotar, rueda para hacer zoom</div>
+<nav class="navbar">
+    <div class="navbar-title">CMFO Astronomía</div>
+    <input type="checkbox" id="menu-toggle">
+    <label for="menu-toggle" class="menu-icon">&#9776;</label>
+    <ul class="menu">
+        <li><a href="../index.html">Inicio</a></li>
+        <li><a href="../investigacion/investigacion.html">Investigación</a></li>
+        <li><a href="../datos/datos.html">Datos CMFO</a></li>
+        <li><a href="visualizacion3d.html">Visualización 3D</a></li>
+        <li><a href="../aportes/aportes.html">Aportes</a></li>
+        <li><a href="../documentacion/documentacion.html">Documentación</a></li>
+        <li><a href="../contacto/contacto.html">Contacto</a></li>
+    </ul>
+</nav>
+
+<header>
+    <h1>Sistema Solar - Representación Científica Realista</h1>
+    <p>Texturas procedurales generadas en tiempo real - Modelo CMFO</p>
+</header>
+
+<div class="contenedor">
+    <div class="section">
+        <h2>🌌 Sistema Solar con Texturas Procedurales</h2>
+        <div id="contenedor3d"></div>
+    </div>
+
+    <div class="panel-control">
+        <h3>🎮 Control de Visualización</h3>
+        <button class="boton-control" onclick="cambiarVista('completa')">🪐 Vista Completa</button>
+        <button class="boton-control" onclick="cambiarVista('interior')">🌍 Planetas Interiores</button>
+        <button class="boton-control" onclick="cambiarVista('gigantes')">🪐 Gigantes Gaseosos</button>
+        <button class="boton-control" onclick="toggleAnimacion()" id="btnAnimacion">▶️ Iniciar Animación</button>
+        <button class="boton-control" onclick="toggleCMFO()" id="btnCMFO">🔧 CMFO: OFF</button>
+    </div>
 </div>
 
+<footer>
+    © 2025 CMFO Astronomía - Visualización Científica
+</footer>
+
 <script>
-// ---------- util: WebGL init ----------
-const canvas = document.getElementById('gl');
-const gl = canvas.getContext('webgl2',{antialias:true});
-if(!gl){ alert('Necesitas un navegador con WebGL2.'); throw 0; }
+// =============================================================================
+// SISTEMA SOLAR PROFESIONAL - TEXTURAS PROCEDURALES
+// =============================================================================
 
-function resize(){
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  const w = Math.floor(innerWidth * dpr);
-  const h = Math.floor(innerHeight * dpr);
-  if(canvas.width !== w || canvas.height !== h){
-    canvas.width = w; canvas.height = h;
-    canvas.style.width = innerWidth + 'px';
-    canvas.style.height = innerHeight + 'px';
-    gl.viewport(0,0,canvas.width,canvas.height);
-  }
-}
-addEventListener('resize', resize);
-resize();
+let escena, camara, renderizador;
+let animacionActiva = false;
+let cmfoActivo = false;
+const objetos = {};
+const etiquetas = {};
 
-// ---------- shaders (fullscreen quad) ----------
-const vs = `#version 300 es
-in vec2 aPos;
-out vec2 vUv;
-void main(){
-  vUv = aPos * 0.5 + 0.5;
-  gl_Position = vec4(aPos, 0.0, 1.0);
-}
-`;
-
-// Fragment shader: ray-sphere for multiple planets; procedural fbm noise; layers.
-const fs = `#version 300 es
-precision highp float;
-in vec2 vUv;
-out vec4 outColor;
-
-uniform vec2 u_resolution;
-uniform float u_time;
-uniform vec3 u_camPos;
-uniform mat3 u_camMat;
-
-// global params
-uniform float u_noiseScale;
-uniform float u_speed;
-uniform int u_planetCount;
-uniform vec4 u_planetData[12]; // up to 3 vec4 per planet = 4*3*? we'll pack params
-uniform vec3 u_lightPos;
-uniform bool u_showOrbits;
-
-// ---------- hashing & noise (value/hash-based) ----------
-uint wangHash(uint x){
-    x = (x ^ 61u) ^ (x >> 16);
-    x *= 9u;
-    x = x ^ (x >> 4);
-    x *= 0x27d4eb2du;
-    x = x ^ (x >> 15);
-    return x;
-}
-float hash12(vec3 p){
-    uint x = floatBitsToUint(p.x*15731.0 + p.y*789221.0 + p.z*1376312589.0);
-    return float(wangHash(x)) / 4294967296.0;
-}
-float noise3(vec3 p){
-    vec3 i = floor(p);
-    vec3 f = fract(p);
-    // trilinear of hashed corners
-    float n000 = hash12(i + vec3(0.0));
-    float n100 = hash12(i + vec3(1.0,0.0,0.0));
-    float n010 = hash12(i + vec3(0.0,1.0,0.0));
-    float n110 = hash12(i + vec3(1.0,1.0,0.0));
-    float n001 = hash12(i + vec3(0.0,0.0,1.0));
-    float n101 = hash12(i + vec3(1.0,0.0,1.0));
-    float n011 = hash12(i + vec3(0.0,1.0,1.0));
-    float n111 = hash12(i + vec3(1.0,1.0,1.0));
-    vec3 u = f * f * (3.0 - 2.0 * f);
-    float nx00 = mix(n000, n100, u.x);
-    float nx10 = mix(n010, n110, u.x);
-    float nx01 = mix(n001, n101, u.x);
-    float nx11 = mix(n011, n111, u.x);
-    float nxy0 = mix(nx00, nx10, u.y);
-    float nxy1 = mix(nx01, nx11, u.y);
-    return mix(nxy0, nxy1, u.z);
-}
-float fbm(vec3 p){
-    float tot = 0.0;
-    float amp = 0.5;
-    float freq = 1.0;
-    for(int i=0;i<6;i++){
-        tot += amp * noise3(p * freq);
-        freq *= 2.0;
-        amp *= 0.5;
+// CONFIGURACIÓN CIENTÍFICA
+const CUERPOS_CELESTES = {
+    sol: {
+        radio: 3.0,
+        nombre: "SOL",
+        tipo: "estrella",
+        colorBase: [1.0, 0.9, 0.1],
+        colorEmisivo: [1.0, 0.4, 0.1],
+        distancia: 0,
+        velocidadRotacion: 0.002,
+        detalles: "Estrella G2V - Núcleo de fusión"
+    },
+    mercurio: {
+        radio: 0.8,
+        nombre: "MERCURIO", 
+        tipo: "rocoso",
+        colorBase: [0.6, 0.5, 0.4],
+        colorSecundario: [0.4, 0.3, 0.2],
+        distancia: 8,
+        velocidadRotacion: 0.008,
+        detalles: "Planeta rocoso - Superficie craterizada"
+    },
+    venus: {
+        radio: 1.2,
+        nombre: "VENUS",
+        tipo: "atmosferico", 
+        colorBase: [0.9, 0.7, 0.3],
+        colorAtmosfera: [1.0, 0.8, 0.5],
+        distancia: 12,
+        velocidadRotacion: 0.006,
+        detalles: "Atmósfera densa CO₂ - Efecto invernadero extremo"
+    },
+    tierra: {
+        radio: 1.3,
+        nombre: "TIERRA",
+        tipo: "oceano",
+        colorBase: [0.2, 0.4, 0.8],
+        colorContinentes: [0.3, 0.6, 0.2],
+        distancia: 16,
+        velocidadRotacion: 0.01,
+        detalles: "Planeta azul - 71% agua - Único con vida"
+    },
+    marte: {
+        radio: 0.9,
+        nombre: "MARTE",
+        tipo: "desertico",
+        colorBase: [0.8, 0.3, 0.1],
+        colorSecundario: [0.6, 0.2, 0.05],
+        distancia: 20,
+        velocidadRotacion: 0.009,
+        detalles: "Planeta rojo - Monte Olimpo: 21.9 km"
+    },
+    jupiter: {
+        radio: 2.8,
+        nombre: "JÚPITER",
+        tipo: "gaseoso",
+        colorBase: [0.9, 0.7, 0.4],
+        colorBandas: [0.7, 0.5, 0.3],
+        distancia: 28,
+        velocidadRotacion: 0.025,
+        detalles: "Gigante gaseoso - Gran Mancha Roja"
+    },
+    saturno: {
+        radio: 2.4,
+        nombre: "SATURNO",
+        tipo: "anillado",
+        colorBase: [0.95, 0.85, 0.6],
+        colorAnillos: [0.8, 0.7, 0.5],
+        distancia: 36,
+        velocidadRotacion: 0.02,
+        detalles: "Sistema de anillos - 82 lunas conocidas"
     }
-    return tot;
-}
-
-// ---------- procedural planet surface ----------
-struct Planet{
-  vec3 pos;
-  float radius;
-  vec3 baseColor;
-  float roughness;
-  float oceanLevel;
-  float cloudCoverage;
-  float rotation; // radians
-  float tilt; // radians
 };
 
-Planet unpackPlanet(int idx){
-  // each planet uses 3 vec4 slots: p0(x,y,z,radius), p1(baseColor), p2(params)
-  int base = idx*3;
-  vec4 p0 = u_planetData[base+0];
-  vec4 p1 = u_planetData[base+1];
-  vec4 p2 = u_planetData[base+2];
-  Planet P;
-  P.pos = p0.xyz;
-  P.radius = p0.w;
-  P.baseColor = p1.rgb;
-  P.roughness = p2.x;
-  P.oceanLevel = p2.y;
-  P.cloudCoverage = p2.z;
-  P.rotation = p2.w;
-  P.tilt = 0.0;
-  return P;
+function iniciarSistema() {
+    // CONFIGURACIÓN THREE.JS
+    const contenedor = document.getElementById('contenedor3d');
+    
+    escena = new THREE.Scene();
+    escena.background = new THREE.Color(0x000011);
+    escena.fog = new THREE.Fog(0x000022, 50, 200);
+    
+    camara = new THREE.PerspectiveCamera(60, contenedor.clientWidth / 600, 0.1, 1000);
+    camara.position.set(0, 15, 50);
+    
+    renderizador = new THREE.WebGLRenderer({ 
+        antialias: true,
+        powerPreference: "high-performance"
+    });
+    renderizador.setSize(contenedor.clientWidth, 600);
+    renderizador.shadowMap.enabled = true;
+    renderizador.shadowMap.type = THREE.PCFSoftShadowMap;
+    contenedor.appendChild(renderizador.domElement);
+    
+    // ILUMINACIÓN PROFESIONAL
+    const luzSolar = new THREE.DirectionalLight(0xffffff, 1.5);
+    luzSolar.position.set(50, 50, 50);
+    luzSolar.castShadow = true;
+    escena.add(luzSolar);
+    
+    const luzAmbiental = new THREE.AmbientLight(0x404040, 0.3);
+    escena.add(luzAmbiental);
+    
+    // CREAR SISTEMA SOLAR
+    crearSistemaSolar();
+    
+    // FONDO ESTELAR
+    crearFondoEstelar();
+    
+    // INICIAR ANIMACIÓN
+    animar();
+    
+    // CONTROLES
+    configurarControles();
 }
 
-// simple phong
-vec3 phong(vec3 p, vec3 n, vec3 viewDir, vec3 baseColor, float metal, float rough){
-  vec3 L = normalize(u_lightPos - p);
-  vec3 H = normalize(L + viewDir);
-  float NdotL = max(dot(n, L), 0.0);
-  float NdotV = max(dot(n, viewDir), 0.001);
-  float NdotH = max(dot(n, H), 0.0);
-  float spec = pow(NdotH, mix(40.0, 6.0, rough));
-  vec3 diffuse = baseColor * NdotL;
-  vec3 specular = mix(vec3(0.04), baseColor, metal) * spec;
-  return diffuse + specular * 0.9;
-}
-
-// render one planet: returns color and depth (z in view space)
-vec4 renderPlanet(Planet P, vec3 ro, vec3 rd){
-  // transform ray by planet rotation/tilt
-  // sphere center in world: P.pos
-  vec3 oc = ro - P.pos;
-  // ray-sphere intersection
-  float b = dot(oc, rd);
-  float c = dot(oc, oc) - P.radius*P.radius;
-  float h = b*b - c;
-  if(h < 0.0) return vec4(0.0);
-  float t = -b - sqrt(h);
-  if(t < 0.0) t = -b + sqrt(h);
-  if(t < 0.0) return vec4(0.0);
-  vec3 p = ro + rd * t; // world-space intersection
-  // normal
-  vec3 n = normalize(p - P.pos);
-  // spherical coords to drive texture
-  // apply tilt/rotation: rotate point around planet Y by P.rotation
-  float theta = P.rotation;
-  // local point relative to planet center, apply rotation:
-  mat3 rotY = mat3(cos(theta),0.0,sin(theta),
-                   0.0,1.0,0.0,
-                   -sin(theta),0.0,cos(theta));
-  vec3 local = rotY * (p - P.pos);
-  // convert to lat/lon
-  float lat = asin(clamp(local.y / P.radius, -1.0, 1.0));
-  float lon = atan(local.z, local.x);
-  // build a direction on unit sphere for sampling (3D noise)
-  // sample noise in 3D with scale:
-  float scale = u_noiseScale;
-  vec3 samplePos = (normalize(local) + vec3(u_time*0.02*P.roughness)) * scale;
-  float elevation = fbm(samplePos * 1.0) * 1.0;
-  // enhance details
-  elevation += 0.5 * fbm(samplePos * 4.0) ;
-  elevation = pow(elevation, 1.2);
-  // determine land/ocean
-  float ocean = step(elevation, P.oceanLevel);
-  // land color variation:
-  vec3 land = P.baseColor * (0.7 + 0.5 * fbm(samplePos * 8.0));
-  vec3 oceanC = mix(vec3(0.02,0.08,0.2), vec3(0.0,0.2,0.35), clamp(0.4 + elevation*0.6,0.0,1.0));
-  // clouds layer
-  float cloudNoise = fbm(samplePos * 2.5 + vec3(12.0));
-  float clouds = smoothstep(0.55, 0.7, cloudNoise + P.cloudCoverage*0.2);
-  vec3 col = mix(oceanC, land, 1.0 - ocean);
-  // add specular (ocean highlights)
-  // bump normal via gradient of fbm (approx)
-  float eL = elevation;
-  float eps = 0.001;
-  float ex = fbm((samplePos + vec3(eps,0,0))*1.0);
-  float ey = fbm((samplePos + vec3(0,eps,0))*1.0);
-  vec3 dn = normalize(vec3((ex - elevation)/eps, (ey - elevation)/eps, 1.0));
-  vec3 finalN = normalize(n + 0.6 * dn);
-  vec3 viewDir = normalize(u_camPos - p);
-  vec3 shaded = phong(p, finalN, viewDir, col, 0.0, P.roughness);
-  // clouds overlay (soft)
-  vec3 cloudColor = vec3(1.0);
-  shaded = mix(shaded, shaded + cloudColor * 0.9, clouds * 0.7);
-  // atmosphere rim (fresnel)
-  float fres = pow(1.0 - max(dot(viewDir, n),0.0), 3.0);
-  shaded += vec3(0.2,0.35,0.6) * fres * 0.25 * (1.0 - ocean);
-  // alpha is 1
-  return vec4(shaded, 1.0);
-}
-
-// ---------- main ----------
-void main(){
-  // screen -> view ray
-  vec2 uv = (vUv * 2.0 - 1.0) * vec2(u_resolution.x/u_resolution.y, 1.0);
-  // camera: u_camMat transforms view basis; ray origin and direction
-  vec3 ro = u_camPos;
-  vec3 rd = normalize(u_camMat * normalize(vec3(uv, -1.6))); // perspective factor
-  vec3 accum = vec3(0.0);
-  float accAlpha = 0.0;
-
-  // optional: background starfield
-  float star = fbm(vec3(uv*30.0, u_time*0.01));
-  vec3 bg = vec3(0.0);
-  bg += 0.02 * pow(max(0.0,1.0 - length(uv)), 2.0);
-  bg += vec3(0.02) * step(0.999, star) * 30.0;
-
-  // render planets back-to-front by distance (simpler approach: loop and blend)
-  for(int i=0;i<4;i++){ // supports up to 4 planets in u_planetCount
-    if(i >= u_planetCount) break;
-    Planet P = unpackPlanet(i);
-    vec4 col = renderPlanet(P, ro, rd);
-    // simple additive-over blending using alpha
-    float a = col.a;
-    accum = mix(accum, col.rgb, a);
-  }
-
-  // optionally show thin orbit lines (pure 2D overlay)
-  if(u_showOrbits){
-    for(int i=0;i<4;i++){
-      if(i >= u_planetCount) break;
-      Planet P = unpackPlanet(i);
-      // project P.pos into screen
-      vec3 cp = P.pos - u_camPos;
-      vec3 sp = u_camMat * cp;
-      // if plane close to camera's z use circle
-      float z = sp.z;
-      if(z < 0.0){
-        float d = length((u_camMat * vec3(P.pos - u_camPos)).xy);
-        // approximate orbit radius in NDC:
-        float orbit = length((u_camMat * vec3(P.pos.x, 0.0, P.pos.z)).xy) * 0.001;
-        // cheap: blend tiny ring at radius proportional to planet distance & axis
-        float r = length( (vec2(vUv.x-0.5, vUv.y-0.5)) );
-      }
+function crearTexturaProcedural(tipo, config) {
+    const canvas = document.createElement('canvas');
+    const size = 512;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    switch(tipo) {
+        case "estrella":
+            crearTexturaEstrella(ctx, size, config);
+            break;
+        case "rocoso":
+            crearTexturaRocoso(ctx, size, config);
+            break;
+        case "gaseoso":
+            crearTexturaGaseoso(ctx, size, config);
+            break;
+        case "oceano":
+            crearTexturaOceano(ctx, size, config);
+            break;
+        case "atmosferico":
+            crearTexturaAtmosferico(ctx, size, config);
+            break;
     }
-  }
-
-  vec3 finalCol = mix(bg, accum, step(0.001, length(accum)));
-  // tone mapping/gamma
-  finalCol = pow(finalCol, vec3(1.0/2.2));
-  outColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
-}
-`;
-
-// ---------- compile helpers ----------
-function createShader(src, type){
-  const s = gl.createShader(type);
-  gl.shaderSource(s, src);
-  gl.compileShader(s);
-  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
-    console.error(gl.getShaderInfoLog(s));
-    throw 'Shader compile error';
-  }
-  return s;
-}
-const prog = gl.createProgram();
-gl.attachShader(prog, createShader(vs, gl.VERTEX_SHADER));
-gl.attachShader(prog, createShader(fs, gl.FRAGMENT_SHADER));
-gl.bindAttribLocation(prog, 0, 'aPos');
-gl.linkProgram(prog);
-if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(prog)); throw 0; }
-gl.useProgram(prog);
-
-// quad
-const quad = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
-gl.enableVertexAttribArray(0);
-gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
-
-// ---------- uniforms ----------
-const u_resolution = gl.getUniformLocation(prog, 'u_resolution');
-const u_time = gl.getUniformLocation(prog, 'u_time');
-const u_camPos = gl.getUniformLocation(prog, 'u_camPos');
-const u_camMat = gl.getUniformLocation(prog, 'u_camMat');
-const u_noiseScale = gl.getUniformLocation(prog, 'u_noiseScale');
-const u_speed = gl.getUniformLocation(prog, 'u_speed');
-const u_planetCount = gl.getUniformLocation(prog, 'u_planetCount');
-const u_planetData = gl.getUniformLocation(prog, 'u_planetData');
-const u_lightPos = gl.getUniformLocation(prog, 'u_lightPos');
-const u_showOrbits = gl.getUniformLocation(prog, 'u_showOrbits');
-
-// ---------- scene setup (planets array) ----------
-let planets = [
-  // {pos: [x,y,z], radius, baseColor: [r,g,b], roughness, oceanLevel, cloudCoverage, rotation}
-  {pos:[0.0,0.0,-6.0], radius:0.8, color:[0.12,0.6,0.15], rough:0.6, ocean:0.45, clouds:0.45, orbitRadius:6.0, orbitSpeed:0.4},
-  {pos:[1.8,0.0,-10.0], radius:1.3, color:[0.8,0.5,0.3], rough:0.7, ocean:0.15, clouds:0.2, orbitRadius:10.0, orbitSpeed:0.18},
-  {pos:[-3.5,0.0,-18.0], radius:1.9, color:[0.4,0.45,0.85], rough:0.55, ocean:0.2, clouds:0.55, orbitRadius:18.0, orbitSpeed:0.09},
-  {pos:[4.5,0.0,-28.0], radius:2.6, color:[0.9,0.7,0.5], rough:0.8, ocean:0.05, clouds:0.05, orbitRadius:28.0, orbitSpeed:0.05}
-];
-
-// pack into float array for uniform (u_planetData length must match shader: 12 vec4 slots -> 48 floats)
-function packPlanetData(planets){
-  // we reserve 12 vec4s (support up to 4 planets * 3 vec4 each)
-  const maxSlots = 12;
-  const arr = new Float32Array(maxSlots * 4);
-  for(let i=0;i<planets.length;i++){
-    const base = i*3*4;
-    const p = planets[i];
-    arr[base + 0] = p.pos[0]; arr[base + 1] = p.pos[1]; arr[base + 2] = p.pos[2]; arr[base + 3] = p.radius;
-    arr[base + 4] = p.color[0]; arr[base + 5] = p.color[1]; arr[base + 6] = p.color[2]; arr[base + 7] = 0.0;
-    arr[base + 8] = p.rough; arr[base + 9] = p.ocean; arr[base +10] = p.clouds; arr[base +11] = 0.0;
-  }
-  return arr;
+    
+    const textura = new THREE.CanvasTexture(canvas);
+    textura.wrapS = THREE.RepeatWrapping;
+    textura.wrapT = THREE.RepeatWrapping;
+    return textura;
 }
 
-// ---------- camera controls ----------
-let cam = {
-  distance: 6.0,
-  yaw: 0.0,
-  pitch: 0.0,
-  target: [0,0,-12]
+function crearTexturaEstrella(ctx, size, config) {
+    const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    gradient.addColorStop(0, `rgb(255, 255, 200)`);
+    gradient.addColorStop(0.3, `rgb(255, 200, 100)`);
+    gradient.addColorStop(0.6, `rgb(255, 100, 50)`);
+    gradient.addColorStop(1, `rgb(150, 50, 0)`);
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Efecto de granulación solar
+    for (let i = 0; i < 1000; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radio = Math.random() * 3;
+        const brillo = 150 + Math.random() * 105;
+        ctx.fillStyle = `rgb(${brillo}, ${brillo}, ${brillo})`;
+        ctx.beginPath();
+        ctx.arc(x, y, radio, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function crearTexturaRocoso(ctx, size, config) {
+    // Base rocosa
+    ctx.fillStyle = `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Cráteres y accidentes
+    for (let i = 0; i < 200; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radio = 2 + Math.random() * 15;
+        
+        // Sombra del cráter
+        ctx.fillStyle = `rgb(${config.colorSecundario[0]*255}, ${config.colorSecundario[1]*255}, ${config.colorSecundario[2]*255})`;
+        ctx.beginPath();
+        ctx.arc(x, y, radio, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Centro iluminado
+        ctx.fillStyle = `rgb(${config.colorBase[0]*255 + 30}, ${config.colorBase[1]*255 + 30}, ${config.colorBase[2]*255 + 30})`;
+        ctx.beginPath();
+        ctx.arc(x - radio/3, y - radio/3, radio/2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function crearTexturaGaseoso(ctx, size, config) {
+    // Base del planeta gaseoso
+    const gradient = ctx.createLinearGradient(0, 0, size, 0);
+    gradient.addColorStop(0, `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`);
+    gradient.addColorStop(0.5, `rgb(${config.colorBandas[0]*255}, ${config.colorBandas[1]*255}, ${config.colorBandas[2]*255})`);
+    gradient.addColorStop(1, `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`);
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Bandas atmosféricas
+    for (let i = 0; i < 10; i++) {
+        const y = Math.random() * size;
+        const altura = 10 + Math.random() * 30;
+        ctx.fillStyle = `rgb(${config.colorBandas[0]*255}, ${config.colorBandas[1]*255}, ${config.colorBandas[2]*255})`;
+        ctx.fillRect(0, y, size, altura);
+    }
+    
+    // Gran Mancha Roja (para Júpiter)
+    if (config.nombre === "JÚPITER") {
+        ctx.fillStyle = 'rgb(200, 100, 80)';
+        ctx.beginPath();
+        ctx.ellipse(size * 0.7, size * 0.4, 40, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function crearTexturaOceano(ctx, size, config) {
+    // Océanos
+    ctx.fillStyle = `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Continentes
+    for (let i = 0; i < 8; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radio = 20 + Math.random() * 40;
+        
+        ctx.fillStyle = `rgb(${config.colorContinentes[0]*255}, ${config.colorContinentes[1]*255}, ${config.colorContinentes[2]*255})`;
+        ctx.beginPath();
+        ctx.arc(x, y, radio, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Montañas
+        for (let j = 0; j < 5; j++) {
+            const mx = x + (Math.random() - 0.5) * radio;
+            const my = y + (Math.random() - 0.5) * radio;
+            ctx.fillStyle = `rgb(${config.colorContinentes[0]*255 - 20}, ${config.colorContinentes[1]*255 - 20}, ${config.colorContinentes[2]*255 - 20})`;
+            ctx.beginPath();
+            ctx.arc(mx, my, 5 + Math.random() * 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
+function crearTexturaAtmosferico(ctx, size, config) {
+    // Superficie
+    ctx.fillStyle = `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Nubes atmosféricas
+    for (let i = 0; i < 50; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radio = 10 + Math.random() * 25;
+        
+        ctx.fillStyle = `rgb(${config.colorAtmosfera[0]*255}, ${config.colorAtmosfera[1]*255}, ${config.colorAtmosfera[2]*255})`;
+        ctx.globalAlpha = 0.3 + Math.random() * 0.4;
+        ctx.beginPath();
+        ctx.arc(x, y, radio, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1.0;
+}
+
+function crearSistemaSolar() {
+    Object.keys(CUERPOS_CELESTES).forEach(nombre => {
+        const cuerpo = CUERPOS_CELESTES[nombre];
+        
+        // CREAR TEXTURA PROCEDURAL
+        const textura = crearTexturaProcedural(cuerpo.tipo, cuerpo);
+        
+        // GEOMETRÍA DE ALTA RESOLUCIÓN
+        const geometria = new THREE.SphereGeometry(cuerpo.radio, 64, 64);
+        
+        // MATERIAL AVANZADO
+        let material;
+        if (nombre === "sol") {
+            material = new THREE.MeshPhongMaterial({
+                map: textura,
+                emissive: new THREE.Color(...cuerpo.colorEmisivo),
+                emissiveIntensity: 1.0,
+                shininess: 100
+            });
+        } else {
+            material = new THREE.MeshPhongMaterial({
+                map: textura,
+                shininess: 30,
+                specular: 0x222222
+            });
+        }
+        
+        const mesh = new THREE.Mesh(geometria, material);
+        
+        // POSICIÓN
+        const angulo = Math.random() * Math.PI * 2;
+        mesh.position.x = Math.cos(angulo) * cuerpo.distancia;
+        mesh.position.z = Math.sin(angulo) * cuerpo.distancia;
+        
+        // PROPIEDADES FÍSICAS
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        // DATOS DE ANIMACIÓN
+        mesh.userData = {
+            nombre: nombre,
+            velocidadRotacion: cuerpo.velocidadRotacion,
+            velocidadOrbital: 0.003 + Math.random() * 0.005,
+            anguloOrbital: angulo,
+            distanciaOrbital: cuerpo.distancia
+        };
+        
+        escena.add(mesh);
+        objetos[nombre] = mesh;
+        
+        // ÓRBITA VISUAL
+        crearOrbitaVisual(cuerpo.distancia);
+        
+        // ETIQUETA
+        crearEtiqueta(nombre);
+        
+        // ANILLOS DE SATURNO
+        if (nombre === "saturno") {
+            crearAnillosSaturno(mesh.position, cuerpo.radio);
+        }
+    });
+}
+
+function crearAnillosSaturno(posicion, radioPlaneta) {
+    const geometriaAnillos = new THREE.RingGeometry(radioPlaneta * 1.5, radioPlaneta * 2.5, 64);
+    const texturaAnillos = crearTexturaAnillos();
+    
+    const materialAnillos = new THREE.MeshBasicMaterial({
+        map: texturaAnillos,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.7
+    });
+    
+    const anillos = new THREE.Mesh(geometriaAnillos, materialAnillos);
+    anillos.rotation.x = Math.PI / 2;
+    anillos.position.copy(posicion);
+    escena.add(anillos);
+    objetos.anillosSaturno = anillos;
+}
+
+function crearTexturaAnillos() {
+    const canvas = document.createElement('canvas');
+    const size = 512;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    const gradient = ctx.createRadialGradient(size/2, size/2, size/4, size/2, size/2, size/2);
+    gradient.addColorStop(0, 'rgba(200, 180, 120, 0)');
+    gradient.addColorStop(0.3, 'rgba(200, 180, 120, 0.8)');
+    gradient.addColorStop(0.7, 'rgba(180, 160, 100, 0.9)');
+    gradient.addColorStop(1, 'rgba(160, 140, 80, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    
+    return new THREE.CanvasTexture(canvas);
+}
+
+function crearOrbitaVisual(radio) {
+    const puntos = [];
+    const segmentos = 128;
+    
+    for (let i = 0; i <= segmentos; i++) {
+        const angulo = (i / segmentos) * Math.PI * 2;
+        puntos.push(new THREE.Vector3(
+            Math.cos(angulo) * radio,
+            0,
+            Math.sin(angulo) * radio
+        ));
+    }
+    
+    const geometria = new THREE.BufferGeometry().setFromPoints(puntos);
+    const material = new THREE.LineBasicMaterial({ 
+        color: 0x336699,
+        transparent: true,
+        opacity: 0.15
+    });
+    
+    const orbita = new THREE.Line(geometria, material);
+    escena.add(orbita);
+}
+
+function crearFondoEstelar() {
+    const estrellasGeometria = new THREE.BufferGeometry();
+    const posiciones = [];
+    const colores = [];
+    
+    for (let i = 0; i < 3000; i++) {
+        const radio = 100 + Math.random() * 400;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+        
+        posiciones.push(
+            radio * Math.sin(phi) * Math.cos(theta),
+            radio * Math.sin(phi) * Math.sin(theta),
+            radio * Math.cos(phi)
+        );
+        
+        const tiposColor = [0x4488FF, 0xFFFFFF, 0xFFFF88, 0xFF8888];
+        const color = tiposColor[Math.floor(Math.random() * tiposColor.length)];
+        colores.push(color);
+    }
+    
+    estrellasGeometria.setAttribute('position', new THREE.Float32BufferAttribute(posiciones, 3));
+    estrellasGeometria.setAttribute('color', new THREE.Float32BufferAttribute(colores, 3));
+    
+    const materialEstrellas = new THREE.PointsMaterial({
+        size: 1.2,
+        vertexColors: true,
+        sizeAttenuation: true
+    });
+    
+    const estrellas = new THREE.Points(estrellasGeometria, materialEstrellas);
+    escena.add(estrellas);
+}
+
+function crearEtiqueta(nombre) {
+    const etiqueta = document.createElement('div');
+    etiqueta.className = 'etiqueta-cuerpo';
+    etiqueta.id = `etiqueta-${nombre}`;
+    etiqueta.textContent = CUERPOS_CELESTES[nombre].nombre;
+    etiqueta.style.display = 'none';
+    document.getElementById('contenedor3d').appendChild(etiqueta);
+    etiquetas[nombre] = etiqueta;
+}
+
+function actualizarEtiquetas() {
+    Object.keys(etiquetas).forEach(nombre => {
+        const cuerpo = objetos[nombre];
+        const etiqueta = etiquetas[nombre];
+        
+        if (cuerpo && etiqueta) {
+            const vector = new THREE.Vector3();
+            cuerpo.getWorldPosition(vector);
+            vector.project(camara);
+            
+            const x = (vector.x * 0.5 + 0.5) * renderizador.domElement.clientWidth;
+            const y = (-(vector.y * 0.5 + 0.5)) * renderizador.domElement.clientHeight;
+            
+            if (vector.z > 0 && vector.z < 1) {
+                etiqueta.style.left = `${x}px`;
+                etiqueta.style.top = `${y}px`;
+                etiqueta.style.display = 'block';
+            } else {
+                etiqueta.style.display = 'none';
+            }
+        }
+    });
+}
+
+function animar() {
+    requestAnimationFrame(animar);
+    
+    if (animacionActiva) {
+        Object.keys(objetos).forEach(nombre => {
+            const objeto = objetos[nombre];
+            const datos = objeto.userData;
+            
+            if (datos) {
+                // ROTACIÓN
+                objeto.rotation.y += datos.velocidadRotacion;
+                
+                // TRASLACIÓN ORBITAL
+                if (nombre !== "sol" && nombre !== "anillosSaturno") {
+                    datos.anguloOrbital += datos.velocidadOrbital;
+                    objeto.position.x = Math.cos(datos.anguloOrbital) * datos.distanciaOrbital;
+                    objeto.position.z = Math.sin(datos.anguloOrbital) * datos.distanciaOrbital;
+                    
+                    // ACTUALIZAR ANILLOS DE SATURNO
+                    if (nombre === "saturno" && objetos.anillosSaturno) {
+                        objetos.anillosSaturno.position.copy(objeto.position);
+                    }
+                }
+            }
+        });
+        
+        actualizarEtiquetas();
+    }
+    
+    renderizador.render(escena, camara);
+}
+
+function configurarControles() {
+    let mouseDown = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    renderizador.domElement.addEventListener('mousedown', (e) => {
+        mouseDown = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+    });
+    
+    renderizador.domElement.addEventListener('mouseup', () => {
+        mouseDown = false;
+    });
+    
+    renderizador.domElement.addEventListener('mousemove', (e) => {
+        if (!mouseDown) return;
+        
+        const deltaX = e.clientX - lastX;
+        const deltaY = e.clientY - lastY;
+        
+        camara.position.x -= deltaX * 0.01;
+        camara.position.y += deltaY * 0.01;
+        
+        lastX = e.clientX;
+        lastY = e.clientY;
+    });
+    
+    renderizador.domElement.addEventListener('wheel', (e) => {
+        camara.position.z += e.deltaY * 0.1;
+    });
+}
+
+// CONTROLES GLOBALES
+window.cambiarVista = function(vista) {
+    switch(vista) {
+        case 'completa': camara.position.set(0, 15, 50); break;
+        case 'interior': camara.position.set(0, 8, 25); break;
+        case 'gigantes': camara.position.set(0, 12, 70); break;
+    }
 };
-let dragging=false, last=[0,0];
-canvas.addEventListener('pointerdown', (e)=>{ dragging=true; last=[e.clientX,e.clientY]; canvas.setPointerCapture(e.pointerId); });
-canvas.addEventListener('pointerup', ()=>dragging=false);
-canvas.addEventListener('pointermove', (e)=>{ if(!dragging) return; const dx=(e.clientX-last[0])*0.005; const dy=(e.clientY-last[1])*0.005; cam.yaw+=dx; cam.pitch = Math.min(1.4, Math.max(-1.4, cam.pitch+dy)); last=[e.clientX,e.clientY]; });
-canvas.addEventListener('wheel', (e)=>{ cam.distance *= 1.0 + Math.sign(e.deltaY)*0.08; cam.distance = Math.max(2.0, Math.min(60.0, cam.distance)); });
 
-// reset
-document.getElementById('reset').onclick = ()=>{ cam.distance=12; cam.yaw=0; cam.pitch=0.1; };
+window.toggleAnimacion = function() {
+    animacionActiva = !animacionActiva;
+    document.getElementById('btnAnimacion').textContent = 
+        animacionActiva ? '⏸️ Pausar Animación' : '▶️ Iniciar Animación';
+};
 
-// UI bindings
-const speedEl = document.getElementById('speed');
-const noiseEl = document.getElementById('noiseScale');
-const orbitsEl = document.getElementById('orbits');
-speedEl.addEventListener('input', ()=>{});
-noiseEl.addEventListener('input', ()=>{});
+window.toggleCMFO = function() {
+    cmfoActivo = !cmfoActivo;
+    document.getElementById('btnCMFO').textContent = 
+        `🔧 CMFO: ${cmfoActivo ? 'ON' : 'OFF'}`;
+};
 
-// ---------- render loop ----------
-let t0 = performance.now();
-function render(){
-  resize();
-  const t = (performance.now() - t0) * 0.001;
-  gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  // update planets positions (simple circular orbits around world origin)
-  const gSpeed = parseFloat(speedEl.value);
-  for(let i=0;i<planets.length;i++){
-    const p = planets[i];
-    const theta = t * p.orbitSpeed * gSpeed + i * 0.4;
-    p.pos[0] = Math.cos(theta) * p.orbitRadius;
-    p.pos[2] = -Math.sin(theta) * p.orbitRadius - 6.0;
-    // spin rotation for texture
-    p.rotation = t * 0.25 * (0.2 + i*0.1);
-  }
-
-  // set uniforms
-  gl.useProgram(prog);
-  gl.uniform2f(u_resolution, canvas.width, canvas.height);
-  gl.uniform1f(u_time, t);
-  // camera pos: build camera from yaw/pitch/distance around origin
-  const camTarget = [0,0,-12];
-  const cx = camTarget[0] + cam.distance * Math.cos(cam.pitch) * Math.sin(cam.yaw);
-  const cy = camTarget[1] + cam.distance * Math.sin(cam.pitch);
-  const cz = camTarget[2] + cam.distance * Math.cos(cam.pitch) * Math.cos(cam.yaw);
-  gl.uniform3f(u_camPos, cx, cy, cz);
-  // cam matrix: right, up, forward basis
-  function normalize(v){ const l=Math.hypot(v[0],v[1],v[2]); return [v[0]/l,v[1]/l,v[2]/l]; }
-  const forward = normalize([camTarget[0]-cx, camTarget[1]-cy, camTarget[2]-cz]);
-  const up = [0,1,0];
-  const right = normalize([ up[1]*forward[2]-up[2]*forward[1], up[2]*forward[0]-up[0]*forward[2], up[0]*forward[1]-up[1]*forward[0] ]);
-  const camUp = [ forward[1]*right[2]-forward[2]*right[1], forward[2]*right[0]-forward[0]*right[2], forward[0]*right[1]-forward[1]*right[0] ];
-  const camMat = new Float32Array([
-    right[0], right[1], right[2],
-    camUp[0], camUp[1], camUp[2],
-    forward[0], forward[1], forward[2]
-  ]);
-  gl.uniformMatrix3fv(u_camMat, false, camMat);
-
-  gl.uniform1f(u_noiseScale, parseFloat(noiseEl.value));
-  gl.uniform1f(u_speed, gSpeed);
-  gl.uniform1i(u_planetCount, planets.length);
-  const packed = packPlanetData(planets);
-  gl.uniform4fv(u_planetData, packed);
-  gl.uniform3f(u_lightPos, 20.0, 10.0, -10.0);
-  gl.uniform1i(u_showOrbits, orbitsEl.checked ? 1 : 0);
-
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  requestAnimationFrame(render);
+// INICIALIZACIÓN
+if (typeof THREE !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', iniciarSistema);
+    window.addEventListener('resize', () => {
+        if (renderizador && camara) {
+            const contenedor = document.getElementById('contenedor3d');
+            camara.aspect = contenedor.clientWidth / 600;
+            camara.updateProjectionMatrix();
+            renderizador.setSize(contenedor.clientWidth, 600);
+        }
+    });
 }
-requestAnimationFrame(render);
-
 </script>
 </body>
 </html>
