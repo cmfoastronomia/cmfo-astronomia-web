@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -22,21 +23,16 @@
             position: absolute;
             color: #00ffff;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
-            background: rgba(0, 0, 0, 0.95);
-            padding: 8px 14px;
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 4px 10px;
+            border-radius: 5px;
             pointer-events: none;
             z-index: 1000;
-            border: 2px solid rgba(0, 255, 255, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.5);
             white-space: nowrap;
-            text-shadow: 0 0 10px #000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.9);
-            transform: translate(-50%, -100%);
-            text-align: center;
-            min-width: 100px;
-            backdrop-filter: blur(5px);
+            text-shadow: 0 0 5px #000;
         }
         
         .panel-control {
@@ -56,20 +52,6 @@
             cursor: pointer;
             margin: 5px;
             font-weight: bold;
-        }
-        
-        .estado-carga {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #00ffff;
-            text-align: center;
-            background: rgba(0,0,0,0.9);
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #00ffff;
-            z-index: 1000;
         }
     </style>
 </head>
@@ -98,12 +80,7 @@
 <div class="contenedor">
     <div class="section">
         <h2>🌌 Sistema Solar con Texturas Procedurales</h2>
-        <div id="contenedor3d">
-            <div class="estado-carga">
-                <div id="mensaje-carga">Generando texturas realistas...</div>
-                <div style="font-size: 12px; margin-top: 10px;">Por favor espere</div>
-            </div>
-        </div>
+        <div id="contenedor3d"></div>
     </div>
 
     <div class="panel-control">
@@ -206,8 +183,6 @@ const CUERPOS_CELESTES = {
 };
 
 function iniciarSistema() {
-    console.log("🚀 Iniciando sistema solar realista...");
-    
     // CONFIGURACIÓN THREE.JS
     const contenedor = document.getElementById('contenedor3d');
     
@@ -231,8 +206,6 @@ function iniciarSistema() {
     const luzSolar = new THREE.DirectionalLight(0xffffff, 1.5);
     luzSolar.position.set(50, 50, 50);
     luzSolar.castShadow = true;
-    luzSolar.shadow.mapSize.width = 2048;
-    luzSolar.shadow.mapSize.height = 2048;
     escena.add(luzSolar);
     
     const luzAmbiental = new THREE.AmbientLight(0x404040, 0.3);
@@ -249,25 +222,14 @@ function iniciarSistema() {
     
     // CONTROLES
     configurarControles();
-    
-    // OCULTAR CARGA
-    setTimeout(() => {
-        document.querySelector('.estado-carga').style.display = 'none';
-    }, 2000);
-    
-    console.log("✅ Sistema solar completamente operativo");
 }
 
 function crearTexturaProcedural(tipo, config) {
     const canvas = document.createElement('canvas');
-    const size = 1024;
+    const size = 512;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
-    
-    // FONDO BASE
-    ctx.fillStyle = `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`;
-    ctx.fillRect(0, 0, size, size);
     
     switch(tipo) {
         case "estrella":
@@ -296,35 +258,20 @@ function crearTexturaProcedural(tipo, config) {
 function crearTexturaEstrella(ctx, size, config) {
     const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
     gradient.addColorStop(0, `rgb(255, 255, 200)`);
-    gradient.addColorStop(0.2, `rgb(255, 220, 120)`);
-    gradient.addColorStop(0.4, `rgb(255, 180, 80)`);
-    gradient.addColorStop(0.7, `rgb(255, 120, 40)`);
-    gradient.addColorStop(1, `rgb(180, 60, 0)`);
+    gradient.addColorStop(0.3, `rgb(255, 200, 100)`);
+    gradient.addColorStop(0.6, `rgb(255, 100, 50)`);
+    gradient.addColorStop(1, `rgb(150, 50, 0)`);
     
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, size, size);
     
-    // EFECTO DE GRANULACIÓN SOLAR
-    for (let i = 0; i < 2000; i++) {
+    // Efecto de granulación solar
+    for (let i = 0; i < 1000; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
-        const radio = Math.random() * 4;
-        const brillo = 180 + Math.random() * 75;
-        ctx.fillStyle = `rgb(${brillo}, ${brillo-20}, ${brillo-40})`;
-        ctx.beginPath();
-        ctx.arc(x, y, radio, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    // PROTUBERANCIAS SOLARES
-    for (let i = 0; i < 100; i++) {
-        const angulo = Math.random() * Math.PI * 2;
-        const distancia = size * 0.3 + Math.random() * size * 0.2;
-        const x = size/2 + Math.cos(angulo) * distancia;
-        const y = size/2 + Math.sin(angulo) * distancia;
-        const radio = 5 + Math.random() * 15;
-        
-        ctx.fillStyle = `rgb(255, ${100 + Math.random() * 100}, 0)`;
+        const radio = Math.random() * 3;
+        const brillo = 150 + Math.random() * 105;
+        ctx.fillStyle = `rgb(${brillo}, ${brillo}, ${brillo})`;
         ctx.beginPath();
         ctx.arc(x, y, radio, 0, Math.PI * 2);
         ctx.fill();
@@ -332,163 +279,103 @@ function crearTexturaEstrella(ctx, size, config) {
 }
 
 function crearTexturaRocoso(ctx, size, config) {
-    // CRÁTERES DETALLADOS
-    for (let i = 0; i < 800; i++) {
+    // Base rocosa
+    ctx.fillStyle = `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Cráteres y accidentes
+    for (let i = 0; i < 200; i++) {
         const x = Math.random() * size;
         const y = Math.random() * size;
-        const radio = 1 + Math.random() * 25;
+        const radio = 2 + Math.random() * 15;
         
-        // SOMBRA DEL CRÁTER
+        // Sombra del cráter
         ctx.fillStyle = `rgb(${config.colorSecundario[0]*255}, ${config.colorSecundario[1]*255}, ${config.colorSecundario[2]*255})`;
         ctx.beginPath();
         ctx.arc(x, y, radio, 0, Math.PI * 2);
         ctx.fill();
         
-        // BORDE ILUMINADO
-        ctx.strokeStyle = `rgb(${config.colorBase[0]*255 + 50}, ${config.colorBase[1]*255 + 50}, ${config.colorBase[2]*255 + 50})`;
-        ctx.lineWidth = 3;
+        // Centro iluminado
+        ctx.fillStyle = `rgb(${config.colorBase[0]*255 + 30}, ${config.colorBase[1]*255 + 30}, ${config.colorBase[2]*255 + 30})`;
         ctx.beginPath();
-        ctx.arc(x, y, radio, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        // PICO CENTRAL
-        if (radio > 8) {
-            ctx.fillStyle = `rgb(${config.colorBase[0]*255 + 30}, ${config.colorBase[1]*255 + 30}, ${config.colorBase[2]*255 + 30})`;
-            ctx.beginPath();
-            ctx.arc(x, y, radio/3, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-    
-    // MONTAÑAS Y ACCIDENTES
-    for (let i = 0; i < 200; i++) {
-        const x = Math.random() * size;
-        const y = Math.random() * size;
-        const altura = 3 + Math.random() * 12;
-        const ancho = 2 + Math.random() * 8;
-        
-        ctx.fillStyle = `rgb(${config.colorBase[0]*255 + 20}, ${config.colorBase[1]*255 + 20}, ${config.colorBase[2]*255 + 20})`;
-        ctx.fillRect(x, y, ancho, altura);
+        ctx.arc(x - radio/3, y - radio/3, radio/2, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
 function crearTexturaGaseoso(ctx, size, config) {
-    // BANDAS ATMOSFÉRICAS HORIZONTALES
-    for (let i = 0; i < 20; i++) {
+    // Base del planeta gaseoso
+    const gradient = ctx.createLinearGradient(0, 0, size, 0);
+    gradient.addColorStop(0, `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`);
+    gradient.addColorStop(0.5, `rgb(${config.colorBandas[0]*255}, ${config.colorBandas[1]*255}, ${config.colorBandas[2]*255})`);
+    gradient.addColorStop(1, `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`);
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Bandas atmosféricas
+    for (let i = 0; i < 10; i++) {
         const y = Math.random() * size;
-        const altura = 10 + Math.random() * 50;
-        const intensidad = 0.4 + Math.random() * 0.6;
-        
-        ctx.fillStyle = `rgb(
-            ${config.colorBandas[0]*255 * intensidad}, 
-            ${config.colorBandas[1]*255 * intensidad}, 
-            ${config.colorBandas[2]*255 * intensidad}
-        )`;
+        const altura = 10 + Math.random() * 30;
+        ctx.fillStyle = `rgb(${config.colorBandas[0]*255}, ${config.colorBandas[1]*255}, ${config.colorBandas[2]*255})`;
         ctx.fillRect(0, y, size, altura);
     }
     
-    // GRAN MANCHA ROJA (JÚPITER)
+    // Gran Mancha Roja (para Júpiter)
     if (config.nombre === "JÚPITER") {
         ctx.fillStyle = 'rgb(200, 100, 80)';
-        ctx.beginPath();
-        ctx.ellipse(size * 0.7, size * 0.4, 60, 30, 0, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // DETALLES DE LA MANCHA
-        ctx.fillStyle = 'rgb(180, 80, 60)';
         ctx.beginPath();
         ctx.ellipse(size * 0.7, size * 0.4, 40, 20, 0, 0, Math.PI * 2);
         ctx.fill();
     }
-    
-    // REMOLINOS ATMOSFÉRICOS
-    for (let i = 0; i < 50; i++) {
-        const x = Math.random() * size;
-        const y = Math.random() * size;
-        const radio = 5 + Math.random() * 20;
-        
-        ctx.strokeStyle = `rgb(
-            ${config.colorBandas[0]*255 * 0.8}, 
-            ${config.colorBandas[1]*255 * 0.8}, 
-            ${config.colorBandas[2]*255 * 0.8}
-        )`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, radio, 0, Math.PI * 1.5);
-        ctx.stroke();
-    }
 }
 
 function crearTexturaOceano(ctx, size, config) {
-    // CONTINENTES PRINCIPALES
-    for (let i = 0; i < 6; i++) {
-        const x = size * 0.1 + Math.random() * size * 0.8;
-        const y = size * 0.1 + Math.random() * size * 0.8;
-        const radio = 40 + Math.random() * 80;
+    // Océanos
+    ctx.fillStyle = `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Continentes
+    for (let i = 0; i < 8; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radio = 20 + Math.random() * 40;
         
-        // CONTINENTE BASE
         ctx.fillStyle = `rgb(${config.colorContinentes[0]*255}, ${config.colorContinentes[1]*255}, ${config.colorContinentes[2]*255})`;
         ctx.beginPath();
         ctx.arc(x, y, radio, 0, Math.PI * 2);
         ctx.fill();
         
-        // CADENAS MONTAÑOSAS
-        for (let j = 0; j < 8; j++) {
-            const angulo = Math.random() * Math.PI * 2;
-            const distancia = Math.random() * radio * 0.8;
-            const mx = x + Math.cos(angulo) * distancia;
-            const my = y + Math.sin(angulo) * distancia;
-            
-            ctx.fillStyle = `rgb(${config.colorContinentes[0]*255 - 30}, ${config.colorContinentes[1]*255 - 30}, ${config.colorContinentes[2]*255 - 30})`;
+        // Montañas
+        for (let j = 0; j < 5; j++) {
+            const mx = x + (Math.random() - 0.5) * radio;
+            const my = y + (Math.random() - 0.5) * radio;
+            ctx.fillStyle = `rgb(${config.colorContinentes[0]*255 - 20}, ${config.colorContinentes[1]*255 - 20}, ${config.colorContinentes[2]*255 - 20})`;
             ctx.beginPath();
-            ctx.arc(mx, my, 8 + Math.random() * 15, 0, Math.PI * 2);
+            ctx.arc(mx, my, 5 + Math.random() * 8, 0, Math.PI * 2);
             ctx.fill();
         }
-        
-        // COSTAS DETALLADAS
-        ctx.strokeStyle = `rgb(${config.colorContinentes[0]*255 - 15}, ${config.colorContinentes[1]*255 - 15}, ${config.colorContinentes[2]*255 - 15})`;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(x, y, radio, 0, Math.PI * 2);
-        ctx.stroke();
-    }
-    
-    // NUBES
-    for (let i = 0; i < 100; i++) {
-        const x = Math.random() * size;
-        const y = Math.random() * size;
-        const radio = 5 + Math.random() * 20;
-        
-        ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.4})`;
-        ctx.beginPath();
-        ctx.arc(x, y, radio, 0, Math.PI * 2);
-        ctx.fill();
     }
 }
 
 function crearTexturaAtmosferico(ctx, size, config) {
-    // NUBES ESPESAS Y CAPAS
-    for (let capa = 0; capa < 3; capa++) {
-        for (let i = 0; i < 80; i++) {
-            const x = Math.random() * size;
-            const y = Math.random() * size;
-            const radio = 15 + Math.random() * 35;
-            const opacidad = 0.2 + (capa * 0.2) + Math.random() * 0.3;
-            
-            ctx.fillStyle = `rgba(${config.colorAtmosfera[0]*255}, ${config.colorAtmosfera[1]*255}, ${config.colorAtmosfera[2]*255}, ${opacidad})`;
-            ctx.beginPath();
-            ctx.arc(x, y, radio, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-    
-    // EFECTO DE BRUMA GLOBAL
-    const gradient = ctx.createRadialGradient(size/2, size/2, size*0.3, size/2, size/2, size*0.8);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
-    gradient.addColorStop(1, `rgba(${config.colorAtmosfera[0]*255}, ${config.colorAtmosfera[1]*255}, ${config.colorAtmosfera[2]*255}, 0.3)`);
-    
-    ctx.fillStyle = gradient;
+    // Superficie
+    ctx.fillStyle = `rgb(${config.colorBase[0]*255}, ${config.colorBase[1]*255}, ${config.colorBase[2]*255})`;
     ctx.fillRect(0, 0, size, size);
+    
+    // Nubes atmosféricas
+    for (let i = 0; i < 50; i++) {
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const radio = 10 + Math.random() * 25;
+        
+        ctx.fillStyle = `rgb(${config.colorAtmosfera[0]*255}, ${config.colorAtmosfera[1]*255}, ${config.colorAtmosfera[2]*255})`;
+        ctx.globalAlpha = 0.3 + Math.random() * 0.4;
+        ctx.beginPath();
+        ctx.arc(x, y, radio, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1.0;
 }
 
 function crearSistemaSolar() {
@@ -499,7 +386,7 @@ function crearSistemaSolar() {
         const textura = crearTexturaProcedural(cuerpo.tipo, cuerpo);
         
         // GEOMETRÍA DE ALTA RESOLUCIÓN
-        const geometria = new THREE.SphereGeometry(cuerpo.radio, 128, 128);
+        const geometria = new THREE.SphereGeometry(cuerpo.radio, 64, 64);
         
         // MATERIAL AVANZADO
         let material;
@@ -507,20 +394,20 @@ function crearSistemaSolar() {
             material = new THREE.MeshPhongMaterial({
                 map: textura,
                 emissive: new THREE.Color(...cuerpo.colorEmisivo),
-                emissiveIntensity: 1.2,
-                shininess: 120
+                emissiveIntensity: 1.0,
+                shininess: 100
             });
         } else {
             material = new THREE.MeshPhongMaterial({
                 map: textura,
-                shininess: cuerpo.tipo === "gaseoso" ? 10 : 30,
-                specular: 0x333333
+                shininess: 30,
+                specular: 0x222222
             });
         }
         
         const mesh = new THREE.Mesh(geometria, material);
         
-        // POSICIÓN INICIAL
+        // POSICIÓN
         const angulo = Math.random() * Math.PI * 2;
         mesh.position.x = Math.cos(angulo) * cuerpo.distancia;
         mesh.position.z = Math.sin(angulo) * cuerpo.distancia;
@@ -533,7 +420,7 @@ function crearSistemaSolar() {
         mesh.userData = {
             nombre: nombre,
             velocidadRotacion: cuerpo.velocidadRotacion,
-            velocidadOrbital: 0.002 + Math.random() * 0.003,
+            velocidadOrbital: 0.003 + Math.random() * 0.005,
             anguloOrbital: angulo,
             distanciaOrbital: cuerpo.distancia
         };
@@ -541,148 +428,52 @@ function crearSistemaSolar() {
         escena.add(mesh);
         objetos[nombre] = mesh;
         
-        // CREAR ETIQUETA INMEDIATAMENTE
+        // ÓRBITA VISUAL
+        crearOrbitaVisual(cuerpo.distancia);
+        
+        // ETIQUETA
         crearEtiqueta(nombre);
         
-        // ÓRBITA VISUAL (excepto sol)
-        if (nombre !== "sol") {
-            crearOrbitaVisual(cuerpo.distancia);
-        }
-        
-        // ANILLOS DE SATURNO (CORREGIDOS - MUY VISIBLES)
+        // ANILLOS DE SATURNO
         if (nombre === "saturno") {
             crearAnillosSaturno(mesh.position, cuerpo.radio);
         }
-        
-        console.log(`✅ ${cuerpo.nombre} creado`);
     });
 }
 
 function crearAnillosSaturno(posicion, radioPlaneta) {
-    // CREAR MÚLTIPLES ANILLOS CON DIFERENTES OPACIDADES
-    const anillosGrupo = new THREE.Group();
+    const geometriaAnillos = new THREE.RingGeometry(radioPlaneta * 1.5, radioPlaneta * 2.5, 64);
+    const texturaAnillos = crearTexturaAnillos();
     
-    // Anillo principal (más visible)
-    const geometriaAnilloPrincipal = new THREE.RingGeometry(radioPlaneta * 1.6, radioPlaneta * 2.3, 128);
-    const texturaAnilloPrincipal = crearTexturaAnilloPrincipal();
-    
-    const materialAnilloPrincipal = new THREE.MeshBasicMaterial({
-        map: texturaAnilloPrincipal,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.9  // MUCHO MÁS VISIBLE
-    });
-    
-    const anilloPrincipal = new THREE.Mesh(geometriaAnilloPrincipal, materialAnilloPrincipal);
-    anilloPrincipal.rotation.x = Math.PI / 2;
-    anillosGrupo.add(anilloPrincipal);
-    
-    // Anillo exterior (más tenue)
-    const geometriaAnilloExterior = new THREE.RingGeometry(radioPlaneta * 2.3, radioPlaneta * 2.7, 128);
-    const texturaAnilloExterior = crearTexturaAnilloExterior();
-    
-    const materialAnilloExterior = new THREE.MeshBasicMaterial({
-        map: texturaAnilloExterior,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.6
-    });
-    
-    const anilloExterior = new THREE.Mesh(geometriaAnilloExterior, materialAnilloExterior);
-    anilloExterior.rotation.x = Math.PI / 2;
-    anillosGrupo.add(anilloExterior);
-    
-    // Anillo interior (más tenue)
-    const geometriaAnilloInterior = new THREE.RingGeometry(radioPlaneta * 1.3, radioPlaneta * 1.6, 128);
-    const texturaAnilloInterior = crearTexturaAnilloInterior();
-    
-    const materialAnilloInterior = new THREE.MeshBasicMaterial({
-        map: texturaAnilloInterior,
+    const materialAnillos = new THREE.MeshBasicMaterial({
+        map: texturaAnillos,
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.7
     });
     
-    const anilloInterior = new THREE.Mesh(geometriaAnilloInterior, materialAnilloInterior);
-    anilloInterior.rotation.x = Math.PI / 2;
-    anillosGrupo.add(anilloInterior);
-    
-    anillosGrupo.position.copy(posicion);
-    escena.add(anillosGrupo);
-    objetos.anillosSaturno = anillosGrupo;
+    const anillos = new THREE.Mesh(geometriaAnillos, materialAnillos);
+    anillos.rotation.x = Math.PI / 2;
+    anillos.position.copy(posicion);
+    escena.add(anillos);
+    objetos.anillosSaturno = anillos;
 }
 
-function crearTexturaAnilloPrincipal() {
+function crearTexturaAnillos() {
     const canvas = document.createElement('canvas');
     const size = 512;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
     
-    // ANILLO PRINCIPAL MUY VISIBLE
-    const gradient = ctx.createRadialGradient(size/2, size/2, size*0.3, size/2, size/2, size*0.45);
-    gradient.addColorStop(0, 'rgba(220, 200, 150, 0.9)');
-    gradient.addColorStop(0.5, 'rgba(240, 220, 170, 1.0)');
-    gradient.addColorStop(1, 'rgba(200, 180, 140, 0.8)');
+    const gradient = ctx.createRadialGradient(size/2, size/2, size/4, size/2, size/2, size/2);
+    gradient.addColorStop(0, 'rgba(200, 180, 120, 0)');
+    gradient.addColorStop(0.3, 'rgba(200, 180, 120, 0.8)');
+    gradient.addColorStop(0.7, 'rgba(180, 160, 100, 0.9)');
+    gradient.addColorStop(1, 'rgba(160, 140, 80, 0)');
     
     ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(size/2, size/2, size*0.45, 0, Math.PI * 2);
-    ctx.arc(size/2, size/2, size*0.3, 0, Math.PI * 2, true);
-    ctx.fill();
-    
-    // BANDAS DENTRO DEL ANILLO
-    for (let i = 0; i < 8; i++) {
-        const radio = size*0.3 + (i * size*0.02);
-        const ancho = size*0.01;
-        const opacidad = 0.3 + Math.random() * 0.4;
-        
-        ctx.strokeStyle = `rgba(180, 160, 120, ${opacidad})`;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(size/2, size/2, radio, 0, Math.PI * 2);
-        ctx.stroke();
-    }
-    
-    return new THREE.CanvasTexture(canvas);
-}
-
-function crearTexturaAnilloExterior() {
-    const canvas = document.createElement('canvas');
-    const size = 512;
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    
-    const gradient = ctx.createRadialGradient(size/2, size/2, size*0.45, size/2, size/2, size*0.5);
-    gradient.addColorStop(0, 'rgba(200, 180, 140, 0.7)');
-    gradient.addColorStop(1, 'rgba(180, 160, 120, 0.4)');
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(size/2, size/2, size*0.5, 0, Math.PI * 2);
-    ctx.arc(size/2, size/2, size*0.45, 0, Math.PI * 2, true);
-    ctx.fill();
-    
-    return new THREE.CanvasTexture(canvas);
-}
-
-function crearTexturaAnilloInterior() {
-    const canvas = document.createElement('canvas');
-    const size = 512;
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    
-    const gradient = ctx.createRadialGradient(size/2, size/2, size*0.25, size/2, size/2, size*0.3);
-    gradient.addColorStop(0, 'rgba(180, 160, 120, 0.8)');
-    gradient.addColorStop(1, 'rgba(160, 140, 100, 0.6)');
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(size/2, size/2, size*0.3, 0, Math.PI * 2);
-    ctx.arc(size/2, size/2, size*0.25, 0, Math.PI * 2, true);
-    ctx.fill();
+    ctx.fillRect(0, 0, size, size);
     
     return new THREE.CanvasTexture(canvas);
 }
@@ -715,10 +506,9 @@ function crearFondoEstelar() {
     const estrellasGeometria = new THREE.BufferGeometry();
     const posiciones = [];
     const colores = [];
-    const tamanos = [];
     
-    for (let i = 0; i < 4000; i++) {
-        const radio = 100 + Math.random() * 500;
+    for (let i = 0; i < 3000; i++) {
+        const radio = 100 + Math.random() * 400;
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos((Math.random() * 2) - 1);
         
@@ -731,18 +521,15 @@ function crearFondoEstelar() {
         const tiposColor = [0x4488FF, 0xFFFFFF, 0xFFFF88, 0xFF8888];
         const color = tiposColor[Math.floor(Math.random() * tiposColor.length)];
         colores.push(color);
-        tamanos.push(0.5 + Math.random() * 2.0);
     }
     
     estrellasGeometria.setAttribute('position', new THREE.Float32BufferAttribute(posiciones, 3));
     estrellasGeometria.setAttribute('color', new THREE.Float32BufferAttribute(colores, 3));
-    estrellasGeometria.setAttribute('size', new THREE.Float32BufferAttribute(tamanos, 1));
     
     const materialEstrellas = new THREE.PointsMaterial({
-        size: 1.5,
+        size: 1.2,
         vertexColors: true,
-        sizeAttenuation: true,
-        transparent: true
+        sizeAttenuation: true
     });
     
     const estrellas = new THREE.Points(estrellasGeometria, materialEstrellas);
@@ -764,15 +551,123 @@ function actualizarEtiquetas() {
         const cuerpo = objetos[nombre];
         const etiqueta = etiquetas[nombre];
         
-        if (cuerpo && etiqueta && renderizador) {
+        if (cuerpo && etiqueta) {
             const vector = new THREE.Vector3();
             cuerpo.getWorldPosition(vector);
             vector.project(camara);
             
-            // CONVERTIR COORDENADAS 3D A 2D - CORRECCIÓN DE POSICIÓN
             const x = (vector.x * 0.5 + 0.5) * renderizador.domElement.clientWidth;
             const y = (-(vector.y * 0.5 + 0.5)) * renderizador.domElement.clientHeight;
             
-            // CALCULAR DISTANCIA PARA AJUSTAR POSICIÓN DE ETIQUETA
-            const distancia = cuerpo.position.distanceTo(camara.position);
-            const offsetY = -30 - (distancia * 0.5); // AJ
+            if (vector.z > 0 && vector.z < 1) {
+                etiqueta.style.left = `${x}px`;
+                etiqueta.style.top = `${y}px`;
+                etiqueta.style.display = 'block';
+            } else {
+                etiqueta.style.display = 'none';
+            }
+        }
+    });
+}
+
+function animar() {
+    requestAnimationFrame(animar);
+    
+    if (animacionActiva) {
+        Object.keys(objetos).forEach(nombre => {
+            const objeto = objetos[nombre];
+            const datos = objeto.userData;
+            
+            if (datos) {
+                // ROTACIÓN
+                objeto.rotation.y += datos.velocidadRotacion;
+                
+                // TRASLACIÓN ORBITAL
+                if (nombre !== "sol" && nombre !== "anillosSaturno") {
+                    datos.anguloOrbital += datos.velocidadOrbital;
+                    objeto.position.x = Math.cos(datos.anguloOrbital) * datos.distanciaOrbital;
+                    objeto.position.z = Math.sin(datos.anguloOrbital) * datos.distanciaOrbital;
+                    
+                    // ACTUALIZAR ANILLOS DE SATURNO
+                    if (nombre === "saturno" && objetos.anillosSaturno) {
+                        objetos.anillosSaturno.position.copy(objeto.position);
+                    }
+                }
+            }
+        });
+        
+        actualizarEtiquetas();
+    }
+    
+    renderizador.render(escena, camara);
+}
+
+function configurarControles() {
+    let mouseDown = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    renderizador.domElement.addEventListener('mousedown', (e) => {
+        mouseDown = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+    });
+    
+    renderizador.domElement.addEventListener('mouseup', () => {
+        mouseDown = false;
+    });
+    
+    renderizador.domElement.addEventListener('mousemove', (e) => {
+        if (!mouseDown) return;
+        
+        const deltaX = e.clientX - lastX;
+        const deltaY = e.clientY - lastY;
+        
+        camara.position.x -= deltaX * 0.01;
+        camara.position.y += deltaY * 0.01;
+        
+        lastX = e.clientX;
+        lastY = e.clientY;
+    });
+    
+    renderizador.domElement.addEventListener('wheel', (e) => {
+        camara.position.z += e.deltaY * 0.1;
+    });
+}
+
+// CONTROLES GLOBALES
+window.cambiarVista = function(vista) {
+    switch(vista) {
+        case 'completa': camara.position.set(0, 15, 50); break;
+        case 'interior': camara.position.set(0, 8, 25); break;
+        case 'gigantes': camara.position.set(0, 12, 70); break;
+    }
+};
+
+window.toggleAnimacion = function() {
+    animacionActiva = !animacionActiva;
+    document.getElementById('btnAnimacion').textContent = 
+        animacionActiva ? '⏸️ Pausar Animación' : '▶️ Iniciar Animación';
+};
+
+window.toggleCMFO = function() {
+    cmfoActivo = !cmfoActivo;
+    document.getElementById('btnCMFO').textContent = 
+        `🔧 CMFO: ${cmfoActivo ? 'ON' : 'OFF'}`;
+};
+
+// INICIALIZACIÓN
+if (typeof THREE !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', iniciarSistema);
+    window.addEventListener('resize', () => {
+        if (renderizador && camara) {
+            const contenedor = document.getElementById('contenedor3d');
+            camara.aspect = contenedor.clientWidth / 600;
+            camara.updateProjectionMatrix();
+            renderizador.setSize(contenedor.clientWidth, 600);
+        }
+    });
+}
+</script>
+</body>
+</html>
